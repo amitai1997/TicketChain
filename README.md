@@ -24,7 +24,7 @@ TicketChain is a blockchain-based event ticketing system built on Ethereum. It a
 
 1. Clone the repository
    ```
-   git clone https://github.com/yourusername/TicketChain.git
+   git clone https://github.com/amitai1997/TicketChain.git
    cd TicketChain
    ```
 
@@ -228,6 +228,20 @@ For production deployment:
 2. Minify and bundle your frontend JavaScript files
 3. Deploy to a production blockchain network
 4. Update the contract address and network settings accordingly
+
+## Testing
+
+The project includes a comprehensive test suite that verifies all major functionality:
+
+1. Run the tests with:
+   ```
+   npx hardhat test
+   ```
+
+2. For coverage reports:
+   ```
+   npx hardhat coverage
+   ```
 
 ## License
 
