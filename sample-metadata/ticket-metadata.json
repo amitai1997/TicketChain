@@ -1,0 +1,59 @@
+{
+  "name": "Blockchain Conference 2025 Ticket #001",
+  "description": "This is a ticket for the Blockchain Conference 2025 happening on May 15, 2025 at 9:00 AM.",
+  "image": "ipfs://QmYourImageCIDHere",
+  "external_url": "https://your-event-website.com",
+  "attributes": [
+    {
+      "trait_type": "Event",
+      "value": "Blockchain Conference 2025"
+    },
+    {
+      "trait_type": "Date",
+      "value": "2025-05-15"
+    },
+    {
+      "trait_type": "Time",
+      "value": "09:00 AM"
+    },
+    {
+      "trait_type": "Location",
+      "value": "San Francisco Convention Center"
+    },
+    {
+      "trait_type": "Ticket Type",
+      "value": "VIP"
+    },
+    {
+      "trait_type": "Seat",
+      "value": "A-12"
+    },
+    {
+      "display_type": "date", 
+      "trait_type": "Event Date", 
+      "value": 1747123200
+    }
+  ],
+  "properties": {
+    "venue": {
+      "name": "San Francisco Convention Center",
+      "address": "747 Howard St, San Francisco, CA 94103",
+      "coordinates": {
+        "latitude": "37.7842",
+        "longitude": "-122.4016"
+      }
+    },
+    "organizer": {
+      "name": "BlockTech Events",
+      "contact": "info@blocktech-events.com"
+    },
+    "terms": {
+      "refundable": false,
+      "transferable": true,
+      "terms_url": "https://your-event-website.com/terms"
+    },
+    "qr_data": "TICKET-1747123200-001-ABCDEFG",
+    "ticket_class": "VIP",
+    "admission_policy": "This ticket grants access to all conference areas, including VIP lounges and special sessions"
+  }
+}

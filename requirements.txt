@@ -1,0 +1,9 @@
+hardhat
+@nomiclabs/hardhat-waffle
+@nomiclabs/hardhat-ethers
+@nomiclabs/hardhat-etherscan
+@openzeppelin/contracts
+ethereum-waffle
+ethers
+chai
+dotenv

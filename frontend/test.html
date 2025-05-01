@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethers.js Test</title>
+</head>
+<body>
+    <h1>Ethers.js Test</h1>
+    <p id="status">Checking ethers.js...</p>
+
+    <!-- Ethers.js library from unpkg -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <script>
+        // Test if ethers is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusElement = document.getElementById('status');
+            
+            if (typeof ethers !== 'undefined') {
+                statusElement.textContent = "SUCCESS: ethers.js is properly loaded! Version: " + ethers.version;
+                statusElement.style.color = "green";
+                
+                // Test provider connection
+                if (window.ethereum) {
+                    statusElement.textContent += " | MetaMask is available";
+                } else {
+                    statusElement.textContent += " | MetaMask not detected";
+                }
+            } else {
+                statusElement.textContent = "ERROR: ethers.js failed to load!";
+                statusElement.style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>
