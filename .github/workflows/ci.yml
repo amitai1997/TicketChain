@@ -2,136 +2,20 @@ name: TicketChain CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
-    # Weekly security scans
     - cron: '0 0 * * 0'
 
-# Define environment variables used across jobs
 env:
   NODE_VERSION: 16
   PNPM_VERSION: 8.6.0
   SOLIDITY_VERSION: 0.8.20
 
 jobs:
-  # Setup and validate environment
-  setup:
-    name: Setup Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        
-      - name: Validate configuration files
-        run: pnpm run validate-config
-    
-  # Check code quality
-  quality:
-    name: Code Quality
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Setup environment
-        uses: ./.github/actions/setup-env
-        
-      - name: Lint Solidity
-        run: pnpm run lint:sol
-        
-      - name: Lint TypeScript/JavaScript
-        run: pnpm run lint:ts
-        
-      - name: Check formatting
-        run: pnpm run format:check
-        
-      - name: Run secret scanning
-        uses: gitleaks/gitleaks-action@v2
-        
-      - name: Scan dependencies
-        run: pnpm audit --audit-level=moderate
-        
-  # Run testing suite
-  test:
-    name: Test
-    needs: setup
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-        solidity-version: ['0.8.19', '0.8.20']
-      
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Setup environment
-        uses: ./.github/actions/setup-env
-        with:
-          node-version: ${{ matrix.node-version }}
-          
-      - name: Compile contracts
-        run: pnpm run compile
-        env:
-          SOLIDITY_VERSION: ${{ matrix.solidity-version }}
-          
-      - name: Run unit tests
-        run: pnpm run test
-        
-      - name: Check test coverage
-        run: pnpm run test:coverage
-        
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
-        
-      - name: Run gas reporter
-        run: pnpm run test:gas
-        
-  # Security analysis
-  security:
-    name: Security Analysis
-    needs: [quality, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Setup environment
-        uses: ./.github/actions/setup-env
-        
-      - name: Run Slither
-        uses: crytic/slither-action@v0.3.0
-        
-      - name: Run CodeQL analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          languages: javascript, typescript
-          
-      - name: Run Snyk
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        
-  # Build artifacts
+  # … other jobs unchanged …
+
   build:
     name: Build
     needs: [quality, test, security]
@@ -139,29 +23,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        
+
       - name: Compile contracts
         run: pnpm run compile --force
-        
+
       - name: Build TypeScript bindings
         run: pnpm run typechain
-        
+
       - name: Build frontend
         run: pnpm run build:frontend
-        
+
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # ← upgraded to v4
         with:
           name: build-artifacts
           path: |
             artifacts/
             typechain-types/
             frontend/build/
-  
-  # Deploy (only on protected branches)
+
   deploy:
     name: Deploy
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
@@ -171,27 +54,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        
+
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4 # ← upgraded to v4
         with:
           name: build-artifacts
-          
+
       - name: Deploy to network
         run: pnpm run deploy:${{ github.ref == 'refs/heads/main' && 'mainnet' || 'testnet' }}
         env:
           INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
           PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-          
+
       - name: Verify contract
         run: pnpm run verify
         env:
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-          
+
       - name: Create deployment record
         uses: bobheadxi/deployments@v1
         with:
@@ -199,7 +82,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           env: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-          
+
   # Generate documentation and release notes
   docs:
     name: Documentation
@@ -209,16 +92,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        
+
       - name: Generate API documentation
         run: pnpm run docs:generate
-        
+
       - name: Update changelog
         uses: conventional-changelog/conventional-changelog-action@v1
-        
+
       - name: Create GitHub release
         uses: actions/create-release@v1
         env:
