@@ -1,71 +1,67 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
-require("@nomiclabs/hardhat-etherscan");
-require("dotenv").config();
+require("dotenv").config(); // For loading environment variables
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
-  const accounts = await hre.ethers.getSigners();
+// Default to development values if environment variables are not set
+const INFURA_API_KEY = process.env.INFURA_API_KEY || "your-infura-key";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-  for (const account of accounts) {
-    console.log(account.address);
-  }
-});
-
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
-  solidity: "0.8.19",
-  networks: {
-    hardhat: {
-      chainId: 1337
-    },
-    localhost: {
-      url: "http://127.0.0.1:8545",
-      chainId: 1337
-    },
-    // Current Ethereum testnets
-    goerli: {
-      url: process.env.GOERLI_URL || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    },
-    sepolia: {
-      url: process.env.SEPOLIA_URL || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    },
-    // Layer 2 and sidechain options
-    polygon: {
-      url: process.env.POLYGON_URL || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    },
-    arbitrum: {
-      url: process.env.ARBITRUM_URL || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    },
-    optimism: {
-      url: process.env.OPTIMISM_URL || "",
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
-    }
-  },
-  etherscan: {
-    apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY,
-      goerli: process.env.ETHERSCAN_API_KEY,
-      sepolia: process.env.ETHERSCAN_API_KEY,
-      polygon: process.env.POLYGONSCAN_API_KEY,
-      arbitrumOne: process.env.ARBISCAN_API_KEY,
-      optimisticEthereum: process.env.OPTIMISM_API_KEY
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   },
   paths: {
-    artifacts: "./artifacts",
-    cache: "./cache",
     sources: "./contracts",
-    tests: "./test"
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
+  },
+  networks: {
+    // Local development
+    hardhat: {
+      chainId: 31337
+    },
+    // Local node
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337
+    },
+    // Sepolia testnet
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY],
+      chainId: 11155111,
+      gas: 2100000,
+      gasPrice: 8000000000 // 8 gwei
+    },
+    // Goerli testnet (alternative)
+    goerli: {
+      url: `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY],
+      chainId: 5
+    },
+    // Mainnet configuration (be careful with this!)
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY],
+      chainId: 1,
+      gasPrice: 20000000000 // 20 gwei
+    }
+  },
+  mocha: {
+    timeout: 100000
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
+  },
+  typechain: {
+    outDir: "types/typechain-types",
+    target: "ethers-v6"
   }
 };

@@ -1,144 +1,115 @@
 # Contributing to TicketChain
 
-## Code of Conduct
+Thank you for considering contributing to TicketChain! This document explains the project structure, development workflow, and contribution guidelines.
 
-By participating in this project, you are expected to uphold our Code of Conduct. Please report unacceptable behavior to project maintainers.
+## Project Structure
 
-## Development Process
+```
+ticketchain/
+├── .github/                  # GitHub workflows and configuration
+├── contracts/                # Smart contracts
+│   ├── interfaces/           # Contract interfaces
+│   ├── libraries/            # Reusable contract libraries
+│   ├── mocks/                # Mock contracts for testing
+│   └── TicketNFT.sol         # Main contract implementation
+├── scripts/                  # Deployment and interaction scripts
+│   ├── utils/                # Helper utilities for scripts
+│   ├── deploy.js             # Main deployment script
+│   └── mint-tickets.js       # Script for minting tickets
+├── test/                     # Test suite
+│   ├── fixtures/             # Test fixtures and shared setup
+│   ├── unit/                 # Unit tests for individual contracts
+│   ├── integration/          # Integration tests across contracts
+│   └── utils/                # Test utilities and helpers
+├── types/                    # TypeScript type definitions
+│   └── typechain-types/      # Generated TypeScript interfaces
+├── deployments/              # Deployment artifacts by network
+└── ...                       # Other project files
+```
 
-### Prerequisites
-
-- Node.js (v16+)
-- Yarn or npm
-- Hardhat
-- MetaMask or Web3 Wallet
-- Polygon Mumbai Testnet access
+## Development Workflow
 
 ### Setup
 
 1. Fork the repository
-2. Clone your fork
-   ```bash
-   git clone https://github.com/[YOUR_USERNAME]/TicketChain.git
-   cd TicketChain
-   ```
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/ticketchain.git`
+3. Install dependencies: `npm install`
+4. Create a `.env` file based on `.env.example`
 
-3. Install dependencies
-   ```bash
-   yarn install
-   ```
+### Branching Model
 
-4. Set up environment variables
-   Create a `.env` file in the project root with:
-   ```
-   POLYGON_MUMBAI_RPC_URL=your_rpc_url
-   PRIVATE_KEY=your_wallet_private_key
-   ```
+- `main` - Production-ready code
+- `develop` - Latest development changes
+- `feature/*` - New features
+- `bugfix/*` - Bug fixes
 
-### Development Workflow
+### Development Process
 
-1. Create a new branch for your feature
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
+1. Create a feature branch from `develop`: `git checkout -b feature/your-feature`
 2. Make your changes
-   - Follow TypeScript and Solidity best practices
-   - Write unit tests for new functionality
-   - Ensure all tests pass before submitting a PR
+3. Run tests: `npm test`
+4. Make sure linting passes: `npm run lint`
+5. Commit your changes following conventional commits format
+6. Push your branch: `git push origin feature/your-feature`
+7. Create a Pull Request to the `develop` branch
 
-3. Run tests
-   ```bash
-   # Run Smart Contract tests
-   yarn test:contracts
+## Pull Request Guidelines
 
-   # Run Frontend tests
-   yarn test:frontend
+- Target the `develop` branch for most changes
+- Fill out the PR template completely
+- Ensure all tests pass
+- Update documentation as needed
+- Add tests for new features
+- Follow the code style of the project
+- Keep PRs focused on a single change
 
-   # Run full test suite
-   yarn test
-   ```
+### Before Submitting a PR
 
-4. Lint your code
-   ```bash
-   yarn lint
-   yarn format
-   ```
+- [ ] Run the test suite with `npm test`
+- [ ] Run linting with `npm run lint`
+- [ ] Update documentation if necessary
+- [ ] Make sure your commits follow conventional commit format
 
-### Smart Contract Development
+## Commit Guidelines
 
-- All smart contracts must be thoroughly tested
-- Use OpenZeppelin libraries for security
-- Include comprehensive NatSpec comments
-- Implement proper access controls
-- Optimize for gas efficiency
+We follow [Conventional Commits](https://www.conventionalcommits.org/) for our commit messages:
 
-### Code Review Process
+```
+<type>(<scope>): <subject>
 
-1. Open a pull request with a clear title and description
-2. Ensure all CI checks pass
-3. Await review from maintainers
-4. Address any feedback promptly
+<body>
 
-### Reporting Bugs
+<footer>
+```
 
-- Use GitHub Issues
-- Provide a clear, detailed description
-- Include steps to reproduce
-- Attach relevant logs or screenshots
+### Types:
 
-### Feature Requests
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools
 
-- Open a GitHub Issue
-- Describe the proposed feature
-- Explain the use case and potential implementation
+Example: `feat(contracts): implement ticket transferability toggle`
 
-## Security
+## Testing
 
-### Reporting Security Issues
+- Unit tests: `npm test`
+- Integration tests: `npm run test:integration`
+- Test coverage: `npm run test:coverage`
 
-- Do NOT open public issues for security vulnerabilities
-- Email security@ticketchain.org with details
-- Include steps to reproduce and potential impact
-- Expect a response within 48 hours
+## Code Style
 
-## Additional Resources
+We use:
+- Solhint for Solidity linting
+- ESLint for JavaScript/TypeScript linting
+- Prettier for code formatting
 
-- [Hardhat Documentation](https://hardhat.org/getting-started/)
-- [Solidity Documentation](https://docs.soliditylang.org/)
-- [Polygon Documentation](https://docs.polygon.technology/)
+Run `npm run lint` to check code style.
 
-## Code of Conduct
+## License
 
-### Our Pledge
-
-In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to making participation in our project and our community a harassment-free experience for everyone.
-
-### Our Standards
-
-Examples of behavior that contributes to creating a positive environment include:
-
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints and experiences
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the community
-- Showing empathy towards other community members
-
-Examples of unacceptable behavior include:
-
-- The use of sexualized language or imagery
-- Trolling, insulting/derogatory comments, and personal or political attacks
-- Public or private harassment
-- Publishing others' private information
-- Other conduct which could reasonably be considered inappropriate in a professional setting
-
-## Enforcement
-
-Project maintainers who do not follow or enforce the Code of Conduct in good faith may face temporary or permanent repercussions as determined by other members of the project's leadership.
-
-## Attribution
-
-This Contributing Guidelines are adapted from the [Contributor Covenant][homepage], version 1.4, available at [http://contributor-covenant.org/version/1/4/][version]
-
-[homepage]: http://contributor-covenant.org
-[version]: http://contributor-covenant.org/version/1/4/
+By contributing, you agree that your contributions will be licensed under the project's MIT License.

@@ -1,22 +1,23 @@
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# TypeScript build output
-dist/
-build/
-out/
-
-# Environment variables
+node_modules
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+coverage
+coverage.json
+typechain
+typechain-types
 
-# Hardhat cache and artifacts
-cache/
-artifacts/
+# Hardhat files
+cache
+artifacts
+
+# IDE files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+
+# Build output
+dist
+build
 
 # Logs
 logs
@@ -25,99 +26,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Testing
-coverage/
-.nyc_output/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temp files
-*.tmp
-*.bak
-*.swp
-
-# Compiled binary addons
-build/Release
-
-# Dependency directories
-node_modules/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
+# Environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Hardhat files
-cache/
-artifacts/
-
-# Next.js build output
-.next
-out
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# Deployment files
+deployments/*
+!deployments/.gitkeep

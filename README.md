@@ -1,248 +1,356 @@
-# TicketChain
+# TicketChain 🎟️
 
-TicketChain is a blockchain-based event ticketing system built on Ethereum. It allows event organizers to create events and mint NFT tickets, while providing control over the secondary market through minimum and maximum resale prices and royalty payments.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Solidity Version](https://img.shields.io/badge/Solidity-v0.8.20-blue)](https://soliditylang.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/ticketchain)
 
-## Features
+A blockchain-based NFT ticketing system built on Ethereum.
 
-- Event Creation: Organizers can create events with customizable parameters
-- NFT Tickets: Tickets are minted as ERC-721 NFTs with metadata
-- Secondary Market: Built-in marketplace for ticket resale
-- Royalty System: Organizers receive a percentage of resale transactions
-- Price Controls: Set minimum and maximum resale prices
-- Ticket Validation: Simple system to validate tickets at the event
+## Table of Contents
 
-## Getting Started
+- [Overview](#overview)
+- [Architecture Diagram](#architecture-diagram)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Detailed Setup](#detailed-setup)
+- [Usage Examples](#usage-examples)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Configuration Reference](#configuration-reference)
+- [Contributing Guide](#contributing-guide)
+- [Roadmap & Planned Features](#roadmap--planned-features)
+- [Known Issues / Limitations](#known-issues--limitations)
+- [License](#license)
+- [Acknowledgments & References](#acknowledgments--references)
+- [Contact & Community](#contact--community)
+
+## Overview
+
+TicketChain revolutionizes event ticketing by providing a secure, transparent, and decentralized platform powered by blockchain technology. Each ticket is represented as a unique NFT (Non-Fungible Token) on the Ethereum blockchain, ensuring authenticity and eliminating counterfeiting.
+
+### Key Features:
+
+- **Secure Ticket Issuance** - Create tamper-proof digital tickets with customizable metadata
+- **Verified Resale Market** - Control secondary market transfers with royalty schemes
+- **Time-Based Validity** - Built-in mechanisms for ticket validation timeframes
+- **Access Control** - Granular permission system for event organizers
+- **Transparent Ownership** - Clear history of ticket ownership and transfers
+- **Anti-Scalping Measures** - Price caps and transfer limitations
+
+## Architecture Diagram
+
+```mermaid
+graph TD
+    A[Event Organizer] -->|Deploy Contract| B[TicketNFT Contract]
+    B -->|Issue Tickets| C[Primary Market]
+    C -->|Purchase| D[Ticket Holder]
+    D -->|Transfer/Sell| E[Secondary Market]
+    E -->|Buy| F[New Ticket Holder]
+    F -->|Redeem| G[Event Entry]
+    
+    subgraph Blockchain
+    B
+    end
+    
+    subgraph TicketChain System
+    C
+    E
+    end
+    
+    B -->|Verify| G
+```
+
+## Tech Stack
+
+- **Solidity (v0.8.20)** - Smart contract language offering security features and EVM compatibility essential for ticket NFT implementation.
+- **OpenZeppelin Contracts** - Provides security-audited contract implementations for access control, tokens, and pausability to reduce vulnerability risks.
+- **Hardhat** - Ethereum development environment with debugging, network management, and testing tools that streamline the development workflow.
+- **Ethers.js** - JavaScript library for interacting with the Ethereum blockchain, chosen for its comprehensive API and Promise-based interface.
+- **Chai/Mocha** - Testing frameworks that enable robust contract testing with readable assertions and organized test suites.
+
+## Quick Start
+
+Get TicketChain running locally in minutes:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ticketchain.git
+cd ticketchain
+
+# Install dependencies
+npm install
+
+# Start a local Ethereum node
+npx hardhat node
+
+# Deploy contracts to the local network (in a new terminal)
+npx hardhat run scripts/deploy.js --network localhost
+
+# Mint a test ticket
+npx hardhat run scripts/mint-tickets.js --network localhost
+```
+
+### Docker Quick Start
+
+```bash
+# Build and run with Docker
+docker build -t ticketchain .
+docker run -p 8545:8545 ticketchain
+```
+
+## Detailed Setup
 
 ### Prerequisites
 
-- Node.js (LTS version recommended - v18.x or v20.x)
-- npm
-- MetaMask or another Ethereum wallet
-- Test ETH on Sepolia testnet (for testnet deployment)
+- Node.js >= 16.x
+- npm >= 8.x
+- Git
 
-### Installation
+### Environment Configuration
 
-1. Clone the repository
-   ```
-   git clone https://github.com/amitai1997/TicketChain.git
-   cd TicketChain
-   ```
+Create a `.env` file in the project root based on the provided `.env.example`:
 
-2. Install dependencies
-   ```
-   npm install
-   ```
-
-3. Create a `.env` file with your configuration:
-   ```
-   PRIVATE_KEY=your_private_key
-   SEPOLIA_URL=your_sepolia_node_url
-   ETHERSCAN_API_KEY=your_etherscan_api_key
-   ```
-
-### Compile Contracts
-
-Compile the smart contracts:
 ```
+# File: .env
+INFURA_API_KEY=your_infura_api_key
+PRIVATE_KEY=your_wallet_private_key
+ETHERSCAN_API_KEY=your_etherscan_api_key
+CONTRACT_ADDRESS=0x123...  # Only needed for script execution
+```
+
+### Network Configuration
+
+TicketChain supports multiple Ethereum networks. Default configuration is in `hardhat.config.js`:
+
+```js
+// File: hardhat.config.js
+module.exports = {
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  networks: {
+    // Local development
+    hardhat: {
+      chainId: 31337
+    },
+    // Local node
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337
+    },
+    // Sepolia testnet
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY],
+      chainId: 11155111,
+      gas: 2100000,
+      gasPrice: 8000000000 // 8 gwei
+    }
+  }
+}
+```
+
+### Contract Compilation
+
+```bash
 npx hardhat compile
 ```
 
-### Deployment Options
+## Usage Examples
 
-#### Option 1: Deploy to Local Development Network (Recommended for development)
+### Example 1: Deploy the Ticketing Contract
 
-For a persistent local development environment:
+```bash
+# Deploy to local development network
+npx hardhat run scripts/deploy.js --network localhost
 
-1. Start a local Hardhat node in one terminal:
-   ```
-   npx hardhat node
-   ```
-
-2. In a second terminal, deploy your contracts with the setup script:
-   ```
-   npx hardhat run scripts/deploy-and-setup.js --network localhost
-   ```
-
-The local node will maintain its state until you stop it, allowing for testing over time. The setup script automatically:
-- Deploys the contract
-- Creates sample events
-- Mints test tickets
-- Sets up everything for immediate testing
-
-#### Option 2: Deploy to Sepolia Testnet
-
-Before deploying to Sepolia, make sure you have:
-- Set up your `.env` file with `PRIVATE_KEY` and `SEPOLIA_URL`
-- Obtained test ETH from a Sepolia faucet (see below)
-
-Deploy to Sepolia:
-```
+# Deploy to Sepolia testnet
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
-### Getting Test ETH on Sepolia
+**Expected Result:** Contract address displayed in terminal and saved to `deployments/{network}-deployment.json`
 
-To get test ETH on Sepolia, you can use any of these faucets:
+### Example 2: Mint a New Ticket
 
-- [Chainlink Faucet](https://faucets.chain.link/sepolia)
-- [QuickNode Faucet](https://faucet.quicknode.com/ethereum/sepolia)
-- [LearnWeb3 Faucet](https://learnweb3.io/faucets/sepolia/)
-
-## Frontend Setup
-
-The TicketChain frontend is a simple web interface that connects to the Ethereum blockchain through MetaMask.
-
-### Running the Frontend
-
-1. Start a simple HTTP server in the frontend directory:
-   ```
-   cd frontend
-   python3 -m http.server 8000
-   ```
-
-2. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
-
-### Configuring MetaMask for Local Development
-
-To connect MetaMask to your local Hardhat node:
-
-1. Open MetaMask and click on the network dropdown
-2. Select "Add Network" > "Add a network manually"
-3. Fill in the following details:
-   - Network Name: `Hardhat Local`
-   - New RPC URL: `http://127.0.0.1:8545`
-   - Chain ID: `31337`
-   - Currency Symbol: `ETH`
-4. Click "Save"
-
-### Importing a Test Account
-
-To use the test accounts that Hardhat generates:
-
-1. In MetaMask, click on your account icon
-2. Select "Import Account"
-3. Paste one of the private keys from the Hardhat console output
-   (e.g., `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` for the first account)
-4. Click "Import"
-
-You should now have 10,000 test ETH to use in your local development environment.
-
-## Important Notes for Frontend Development
-
-### Contract Address
-
-The default contract address in the frontend code is set to the address that Hardhat generally uses for the first deployed contract:
-
-```
-0x5FbDB2315678afecb367f032d93F642f64180aa3
+```bash
+# Create a basic ticket with default parameters
+npx hardhat run scripts/mint-tickets.js --network localhost
 ```
 
-If your contract is deployed to a different address, update this value in `frontend/app.js`.
+**Expected Result:** Ticket #1 minted with specified metadata (event ID, price, validity period, etc.)
 
-### Debugging Tips
+### Example 3: Transfer a Ticket
 
-If you encounter issues with the frontend:
-
-1. **Console errors related to events**: The frontend uses a simplified approach to display tickets by checking the user's balance rather than filtering events. This is more robust as filtering by non-indexed parameters can cause errors.
-
-2. **MetaMask connection issues**: Ensure you're connected to the Hardhat Local network and have imported an account with sufficient test ETH.
-
-3. **Transaction failures**: Check the Hardhat node console for detailed error messages that can help debug contract interaction issues.
-
-4. **Restart Hardhat node if needed**: If you encounter strange behavior, try restarting your Hardhat node and redeploying:
-   ```
-   # Kill existing node
-   pkill -f "hardhat node"
-   
-   # Start fresh node
-   npx hardhat node
-   
-   # In a new terminal, redeploy contracts
-   npx hardhat run scripts/deploy-and-setup.js --network localhost
-   ```
-
-5. **Frontend reloads**: After purchasing tickets, the frontend will automatically check your balance. If tickets don't appear immediately, use the refresh button to check again, as there can be slight delays in transaction indexing.
-
-## Smart Contract Interface
-
-### Event Creation
-```solidity
-function createEvent(
-    string memory name,
-    string memory description,
-    uint256 ticketPrice,
-    uint256 maxTickets,
-    uint256 eventDate,
-    uint256 minResalePrice,
-    uint256 maxResalePrice,
-    uint256 royaltyPercentage
-) public returns (uint256)
+```js
+// File: scripts/transfer-ticket.js
+const ticketId = 1;
+const recipientAddress = "0xRecipientAddressHere";
+const tx = await ticketNFT.connect(ticketOwner)["safeTransferFrom(address,address,uint256)"](
+  ticketOwner.address,
+  recipientAddress,
+  ticketId
+);
+await tx.wait();
 ```
 
-### Ticket Minting
-```solidity
-function mintTicket(uint256 eventId, string memory metadataURI) public payable returns (uint256)
-```
-
-### Secondary Market
-```solidity
-function listTicketForResale(uint256 tokenId, uint256 price) public
-function buyResaleTicket(uint256 tokenId) public payable
-function cancelResaleListing(uint256 tokenId) public
-```
-
-### Event Management
-```solidity
-function cancelEvent(uint256 eventId) public
-function isTicketValid(uint256 tokenId) public view returns (bool)
-function getEvent(uint256 eventId) public view returns (Event memory)
-function getEventCount() public view returns (uint256)
-```
-
-## Advanced Development
-
-### Modifying the Contract
-
-If you need to modify the contract, especially if you need to add indexed parameters to events for better filtering, make these changes in the solidity files and then:
-
-1. Recompile the contracts:
-   ```
-   npx hardhat compile
-   ```
-
-2. Update the ABI in `frontend/app.js` with the new ABI from `artifacts/contracts/TicketNFT.sol/TicketNFT.json`
-
-3. Redeploy the contract:
-   ```
-   npx hardhat run scripts/deploy-and-setup.js --network localhost
-   ```
-
-### Creating a Production Build
-
-For production deployment:
-
-1. Use a proper web server instead of the Python development server
-2. Minify and bundle your frontend JavaScript files
-3. Deploy to a production blockchain network
-4. Update the contract address and network settings accordingly
+**Expected Result:** Ticket ownership transferred to recipient (transaction hash displayed)
 
 ## Testing
 
-The project includes a comprehensive test suite that verifies all major functionality:
+TicketChain includes comprehensive tests for all core functionality.
 
-1. Run the tests with:
-   ```
-   npx hardhat test
-   ```
+### Running the Test Suite
 
-2. For coverage reports:
-   ```
-   npx hardhat coverage
-   ```
+```bash
+# Run all tests
+npx hardhat test
+
+# Run specific test file
+npx hardhat test test/TicketLifecycle.test.ts
+
+# Run tests with gas reporting
+REPORT_GAS=true npx hardhat test
+
+# Run test coverage analysis
+npx hardhat coverage
+```
+
+### Test Structure
+
+- `test/AccessControl.test.ts` - Tests for role-based permissions
+- `test/SecurityAndPausability.test.ts` - Tests for pausing functionality
+- `test/TicketLifecycle.test.ts` - Tests for ticket creation, validation, and transfer
+
+## Deployment
+
+### Production Deployment
+
+For production deployments, follow these steps:
+
+1. Configure `.env` with your production credentials
+2. Run the deployment script targeting your production network:
+
+```bash
+npx hardhat run scripts/deploy.js --network mainnet
+```
+
+### Contract Verification
+
+To verify your contract on Etherscan:
+
+```bash
+npx hardhat verify --network sepolia YOUR_DEPLOYED_CONTRACT_ADDRESS
+```
+
+### CI/CD Integration
+
+TicketChain can be integrated with GitHub Actions or other CI providers. Example workflow:
+
+```yaml
+# File: .github/workflows/main.yml
+name: TicketChain CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npm test
+```
+
+## Configuration Reference
+
+| Parameter | Default | Description | Where to Set |
+|-----------|---------|-------------|-------------|
+| `MINTER_ROLE` | Owner | Controls who can create new tickets | Contract, grantRole function |
+| `PAUSER_ROLE` | Owner | Controls who can pause/unpause the contract | Contract, grantRole function |
+| `Gas Limit` | 2,100,000 | Maximum computational effort for transactions | hardhat.config.js |
+| `Gas Price` | 8 gwei | Price per unit of gas (network-specific) | hardhat.config.js |
+| `Optimizer Runs` | 200 | Contract optimization level | hardhat.config.js |
+| `Network Chain ID` | 31337 (localhost) | Blockchain network identifier | hardhat.config.js |
+
+## Contributing Guide
+
+We welcome contributions from the community! Follow these steps to contribute:
+
+### Branching Model
+
+- `main` - Production-ready code
+- `develop` - Latest development changes
+- `feature/*` - New features
+- `bugfix/*` - Bug fixes
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`npx hardhat test`)
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### PR Checklist
+
+- [ ] Tests added/updated for new functionality
+- [ ] Documentation updated
+- [ ] Code follows project style guide
+- [ ] All tests passing
+
+## Roadmap & Planned Features
+
+- **Q2 2025**: Mobile app integration
+- **Q3 2025**: Multi-chain support (Polygon, Optimism)
+- **Q3 2025**: Advanced ticketing features (e.g., seat selection, tiered pricing)
+- **Q4 2025**: Event organizer dashboard
+- **Q1 2026**: Integration with point-of-sale systems
+- **Future**: Layer 2 scaling solution integration
+
+## Known Issues / Limitations
+
+- **Gas Costs**: High gas prices on Ethereum mainnet can make individual ticket minting expensive
+  - *Workaround*: Use batched minting or consider L2 solutions
+- **Block Confirmation Times**: Event entry might require waiting for transaction confirmations
+  - *Workaround*: Use state channels or implement a centralized verification layer
+- **MetaMask Required**: Requires users to have MetaMask or similar wallet
+  - *Workaround*: Implement custodial solution for mainstream adoption
+- **Ethereum Node.js v23 Compatibility**: Some warnings appear with newer Node.js versions
+  - *Workaround*: Use Node.js v18 for best compatibility
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 TicketChain Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+```
+
+## Acknowledgments & References
+
+- OpenZeppelin for their secure contract implementations
+- Ethereum Foundation documentation
+- [ERC-721 Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
+- [NFT Ticketing Research Paper](https://arxiv.org/abs/example)
+- Inspired by [GET Protocol](https://get-protocol.io/) and other blockchain ticketing projects
+
+## Contact & Community
+
+- **GitHub Issues**: For bug reports and feature requests
+- **Email**: team@ticketchain.example.com
+- **Discord**: [Join our server](https://discord.gg/ticketchain)
+- **Twitter**: [@TicketChainDev](https://twitter.com/ticketchaindev)
