@@ -1,0 +1,15 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": ["prettier"],
+  "rules": {
+    "compiler-version": ["error", "^0.8.0"],
+    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "not-rely-on-time": "warn",
+    "avoid-low-level-calls": "warn",
+    "no-inline-assembly": "warn",
+    "contract-name-camelcase": "error",
+    "ordering": "warn",
+    "prettier/prettier": "error",
+    "max-states-count": ["warn", 15]
+  }
+}
