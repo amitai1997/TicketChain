@@ -25,7 +25,7 @@ describe('TicketNFT Access Control', () => {
   it('should have correct initial roles', async () => {
     const DEFAULT_ADMIN_ROLE = await ticketNFT.DEFAULT_ADMIN_ROLE();
     const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
-    
+
     expect(await ticketNFT.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.true;
     expect(await ticketNFT.hasRole(MINTER_ROLE, owner.address)).to.be.true;
     expect(await ticketNFT.hasRole(MINTER_ROLE, minter.address)).to.be.true;
@@ -34,7 +34,7 @@ describe('TicketNFT Access Control', () => {
   it('should allow admin to grant minter role', async () => {
     const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
     await ticketNFT.grantRole(MINTER_ROLE, nonMinter.address);
-    
+
     expect(await ticketNFT.hasRole(MINTER_ROLE, nonMinter.address)).to.be.true;
   });
 
@@ -68,7 +68,7 @@ describe('TicketNFT Access Control', () => {
 
   it('should prevent revoking admin role for owner', async () => {
     const DEFAULT_ADMIN_ROLE = await ticketNFT.DEFAULT_ADMIN_ROLE();
-    
+
     await expect(
       ticketNFT.renounceRole(DEFAULT_ADMIN_ROLE, owner.address)
     ).to.be.revertedWithCustomError(ticketNFT, 'CannotRenounceAdminRole');

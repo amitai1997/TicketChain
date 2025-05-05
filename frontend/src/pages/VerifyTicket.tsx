@@ -26,28 +26,28 @@ const VerifyTicket = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!ticketId.trim()) {
       toast.error('Please enter a ticket ID')
       return
     }
-    
+
     try {
       setIsVerifying(true)
       setVerifiedTicket(null)
       setIsVerified(null)
-      
+
       const ticket = await fetchTicketData(BigInt(ticketId))
-      
+
       if (ticket) {
         setVerifiedTicket(ticket)
-        
+
         // Check if ticket is valid (not expired)
         const now = Math.floor(Date.now() / 1000)
-        const isValid = 
-          Number(ticket.metadata.validFrom) <= now && 
+        const isValid =
+          Number(ticket.metadata.validFrom) <= now &&
           Number(ticket.metadata.validUntil) > now
-        
+
         setIsVerified(isValid)
       } else {
         toast.error('Ticket not found')
@@ -69,7 +69,7 @@ const VerifyTicket = () => {
         <h1 className="text-3xl font-bold">Verify Ticket</h1>
         <p className="text-muted-foreground">Check if a ticket is valid and authentic</p>
       </div>
-      
+
       <div className="bg-card p-6 rounded-lg border border-border shadow-sm mb-8">
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -105,7 +105,7 @@ const VerifyTicket = () => {
           </button>
         </form>
       </div>
-      
+
       {/* Verification Result */}
       {isVerified !== null && (
         <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
@@ -122,7 +122,7 @@ const VerifyTicket = () => {
               </>
             )}
           </div>
-          
+
           {verifiedTicket && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -151,7 +151,7 @@ const VerifyTicket = () => {
                   <p className="text-sm font-medium">{formatDate(verifiedTicket.metadata.validUntil)}</p>
                 </div>
               </div>
-              
+
               {!isVerified && (
                 <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-md flex items-start">
                   <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5 mr-3" />
