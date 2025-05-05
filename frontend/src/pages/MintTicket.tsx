@@ -1,5 +1,7 @@
+import { ethers } from "ethers";
+import TicketNFTAbi from "@/artifacts/contracts/TicketNFT.sol/TicketNFT.json";
 // File: src/pages/MintTicket.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ticket, Clock, Tag, Calendar, RefreshCw } from 'lucide-react'
 import { useAccount } from 'wagmi'
@@ -10,8 +12,9 @@ import { toast } from 'sonner'
 const MintTicket = () => {
   const navigate = useNavigate()
   const { isConnected, address } = useAccount()
-  const { mintNewTicket, totalSupply } = useTicketNFT()
+  const { mintNewTicket, totalSupply, checkHasRole } = useTicketNFT()
   const [isMinting, setIsMinting] = useState(false)
+  const [hasMinterRole, setHasMinterRole] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -21,6 +24,38 @@ const MintTicket = () => {
     validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days later
     isTransferable: true,
   })
+
+  // Check if user has MINTER_ROLE
+  useEffect(() => {
+    const checkMinterRole = async () => {
+      if (isConnected && address) {
+        try {
+          // Create an ethers provider
+          if (!window.ethereum) return
+          
+          const provider = new ethers.providers.Web3Provider(window.ethereum)
+          const contract = new ethers.Contract(
+            '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+            TicketNFTAbi.abi,
+            provider
+          )
+          
+          // Get MINTER_ROLE
+          const MINTER_ROLE = await contract.MINTER_ROLE()
+          
+          // Check if user has MINTER_ROLE
+          const hasRole = await contract.hasRole(MINTER_ROLE, address)
+          setHasMinterRole(hasRole)
+          
+          console.log(`User ${address} ${hasRole ? 'has' : 'does not have'} MINTER_ROLE`)
+        } catch (error) {
+          console.error('Error checking MINTER_ROLE:', error)
+        }
+      }
+    }
+    
+    checkMinterRole()
+  }, [isConnected, address])
 
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -54,6 +89,16 @@ const MintTicket = () => {
       // Convert dates to Unix timestamps
       const validFrom = Math.floor(formData.validFrom.getTime() / 1000)
       const validUntil = Math.floor(formData.validUntil.getTime() / 1000)
+      
+      console.log('Minting with params:', {
+        address,
+        newTokenId: newTokenId.toString(),
+        eventId: formData.eventId,
+        price: formData.price,
+        validFrom,
+        validUntil,
+        isTransferable: formData.isTransferable
+      })
       
       await mintNewTicket(
         address,
@@ -103,6 +148,14 @@ const MintTicket = () => {
         <h1 className="text-3xl font-bold">Mint a New Ticket</h1>
         <p className="text-muted-foreground">Create a new NFT ticket for your event</p>
       </div>
+      
+      {!hasMinterRole && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-6">
+          <p className="text-yellow-700 dark:text-yellow-200">
+            Your account doesn't have minter permissions. We'll attempt to grant you the MINTER_ROLE when you submit the form.
+          </p>
+        </div>
+      )}
       
       <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
         <form onSubmit={handleSubmit}>

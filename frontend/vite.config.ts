@@ -25,11 +25,9 @@ export default defineConfig({
     }
   },
   server: {
-    host: '0.0.0.0',
-    port: 5173,
-    strictPort: true,
-    hmr: {
-      clientPort: 5173 // Ensure HMR works correctly
-    }
+    port: 3000,
+    host: true,
+    strictPort: false,
+    open: true
   }
 })

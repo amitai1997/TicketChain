@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import { ethers } from 'ethers'
 
 // Import contract ABI
-// Using require since import can have issues with JSON files in TypeScript
 import TicketNFTAbi from '../artifacts/contracts/TicketNFT.sol/TicketNFT.json'
 
 // Type definitions from contract
@@ -45,8 +44,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'totalSupply',
-    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
-    watch: true,
+    chainId: 1337
   })
 
   // Setup contract write for minting new tickets
@@ -54,7 +52,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'mintTicket',
-    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
+    chainId: 1337
   })
 
   // Setup contract write for transferring tickets
@@ -62,7 +60,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'transferFrom',
-    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
+    chainId: 1337
   })
 
   // Listen for Transfer events
@@ -83,7 +81,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         fetchUserTickets()
       }
     },
-    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
+    chainId: 1337
   })
 
   // Function to fetch a single ticket's data
@@ -98,26 +96,31 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       
       const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider)
       
-      // Get owner
-      const owner = await contract.ownerOf(tokenId)
-      
-      // Get metadata
-      const metadata = await contract.getTicketMetadata(tokenId)
-      
-      // Check if ticket is valid
-      const isValid = await contract.isTicketValid(tokenId)
-      
-      return {
-        id: tokenId,
-        owner,
-        metadata: {
-          eventId: metadata.eventId,
-          price: metadata.price,
-          validFrom: metadata.validFrom,
-          validUntil: metadata.validUntil,
-          isTransferable: metadata.isTransferable
-        },
-        isValid
+      try {
+        // Get owner
+        const owner = await contract.ownerOf(tokenId)
+        
+        // Get metadata
+        const metadata = await contract.getTicketMetadata(tokenId)
+        
+        // Check if ticket is valid
+        const isValid = await contract.isTicketValid(tokenId)
+        
+        return {
+          id: tokenId,
+          owner,
+          metadata: {
+            eventId: metadata.eventId,
+            price: metadata.price,
+            validFrom: metadata.validFrom,
+            validUntil: metadata.validUntil,
+            isTransferable: metadata.isTransferable
+          },
+          isValid
+        }
+      } catch (error) {
+        console.error(`Error fetching ticket ${tokenId} details:`, error)
+        return null
       }
     } catch (error) {
       console.error(`Error fetching ticket ${tokenId}:`, error)
@@ -145,28 +148,38 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       
       const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider)
       
-      // Get balance of user
-      const balance = await contract.balanceOf(userAddress)
-      
-      // If user has no tickets, return empty array
-      if (balance === 0n || balance.eq(0)) {
+      try {
+        // Get balance of user
+        const balance = await contract.balanceOf(userAddress)
+        
+        // If user has no tickets, return empty array
+        const balanceNumber = balance ? Number(balance) : 0
+        if (balanceNumber === 0) {
+          setUserTickets([])
+          setIsLoading(false)
+          return
+        }
+        
+        // For each token, get the token ID
+        const ticketPromises = []
+        for (let i = 0; i < balanceNumber; i++) {
+          try {
+            const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i)
+            ticketPromises.push(fetchTicketData(tokenId))
+          } catch (error) {
+            console.error(`Error fetching token at index ${i}:`, error)
+          }
+        }
+        
+        // Wait for all promises to resolve
+        const tickets = await Promise.all(ticketPromises)
+        
+        // Filter out null tickets (in case of errors)
+        setUserTickets(tickets.filter(Boolean) as Ticket[])
+      } catch (error) {
+        console.error('Error fetching user tickets:', error)
         setUserTickets([])
-        setIsLoading(false)
-        return
       }
-      
-      // For each token, get the token ID
-      const ticketPromises = []
-      for (let i = 0; i < Number(balance); i++) {
-        const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i)
-        ticketPromises.push(fetchTicketData(tokenId))
-      }
-      
-      // Wait for all promises to resolve
-      const tickets = await Promise.all(ticketPromises)
-      
-      // Filter out null tickets (in case of errors)
-      setUserTickets(tickets.filter(Boolean) as Ticket[])
     } catch (error) {
       console.error('Error fetching user tickets:', error)
       toast.error('Failed to load tickets')
@@ -174,6 +187,24 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       setIsLoading(false)
     }
   }, [userAddress, isConnected, contractAddr, fetchTicketData])
+
+  // Function to check if an account has a role
+  const checkHasRole = useCallback(async (role: string, account: string) => {
+    try {
+      if (!window.ethereum) {
+        throw new Error('No provider available')
+      }
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider)
+      
+      // Check if account has role
+      return await contract.hasRole(role, account)
+    } catch (error) {
+      console.error(`Error checking role ${role} for ${account}:`, error)
+      return false
+    }
+  }, [contractAddr])
 
   // Function to mint a new ticket
   const mintNewTicket = useCallback(async (
@@ -186,8 +217,49 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     isTransferable: boolean
   ) => {
     try {
+      // Check if account has MINTER_ROLE
+      if (!window.ethereum) {
+        throw new Error('No provider available')
+      }
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const signerAddress = await signer.getAddress()
+      
+      const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, signer)
+      
+      // Get MINTER_ROLE
+      const MINTER_ROLE = await contract.MINTER_ROLE()
+      
+      // Check if signer has MINTER_ROLE
+      const hasMinterRole = await contract.hasRole(MINTER_ROLE, signerAddress)
+      
+      if (!hasMinterRole) {
+        console.log(`Granting MINTER_ROLE to ${signerAddress}...`)
+        
+        try {
+          // Try to grant MINTER_ROLE to self (assuming we're admin)
+          const DEFAULT_ADMIN_ROLE = await contract.DEFAULT_ADMIN_ROLE()
+          const isAdmin = await contract.hasRole(DEFAULT_ADMIN_ROLE, signerAddress)
+          
+          if (isAdmin) {
+            const grantTx = await contract.grantRole(MINTER_ROLE, signerAddress)
+            await grantTx.wait()
+            console.log(`Successfully granted MINTER_ROLE to ${signerAddress}`)
+          } else {
+            throw new Error(`Account ${signerAddress} is not an admin and cannot mint tickets`)
+          }
+        } catch (error) {
+          console.error('Error granting MINTER_ROLE:', error)
+          toast.error('You don\'t have permission to mint tickets')
+          throw new Error('Permission denied: Not a minter')
+        }
+      }
+      
+      // Convert price to Wei
       const priceInWei = parseEther(price)
       
+      // Prepare metadata
       const metadata = {
         eventId,
         price: priceInWei,
@@ -196,19 +268,24 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         isTransferable
       }
       
-      const tx = await mintTicket({
-        args: [to, tokenId, metadata],
+      console.log('Minting with params:', {
+        to,
+        tokenId: tokenId.toString(),
+        metadata
       })
       
-      toast.success('Ticket minting in progress')
+      // Call mintTicket directly with signer
+      const tx = await contract.mintTicket(to, tokenId, metadata)
+      await tx.wait()
       
+      toast.success('Ticket minted successfully!')
       return tx
     } catch (error) {
       console.error('Error minting ticket:', error)
       toast.error('Failed to mint ticket')
       throw error
     }
-  }, [mintTicket])
+  }, [contractAddr])
 
   // Function to transfer a ticket
   const transferTicketTo = useCallback(async (
@@ -217,19 +294,27 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     tokenId: bigint
   ) => {
     try {
-      const tx = await transferTicket({
-        args: [from, to, tokenId],
-      })
+      // Use ethers.js directly for better error handling
+      if (!window.ethereum) {
+        throw new Error('No provider available')
+      }
       
-      toast.success('Ticket transfer in progress')
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, signer)
       
+      // Execute the transfer
+      const tx = await contract.transferFrom(from, to, tokenId)
+      await tx.wait()
+      
+      toast.success('Ticket transferred successfully!')
       return tx
     } catch (error) {
       console.error('Error transferring ticket:', error)
       toast.error('Failed to transfer ticket')
       throw error
     }
-  }, [transferTicket])
+  }, [contractAddr])
 
   // Load user tickets on mount or when address changes
   useEffect(() => {
@@ -246,6 +331,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     fetchUserTickets,
     mintNewTicket,
     transferTicketTo,
-    fetchTicketData
+    fetchTicketData,
+    checkHasRole
   }
 }

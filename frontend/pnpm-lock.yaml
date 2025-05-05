@@ -15,7 +15,7 @@ dependencies:
     specifier: ^2.0.0
     version: 2.0.0
   ethers:
-    specifier: 5.7.2
+    specifier: ^5.7.2
     version: 5.7.2
   lucide-react:
     specifier: ^0.288.0
