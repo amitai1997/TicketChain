@@ -67,7 +67,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         try {
           const totalSupply = await contract.totalSupply();
           // Convert to number and add 1
-          const nextId = totalSupply ? totalSupply.add(1) : BigInt(1);
+          const nextId = totalSupply ? BigInt(totalSupply.toString()) + BigInt(1) : BigInt(1);
           setNextTokenId(nextId);
           console.log(`Next token ID is: ${nextId.toString()}`);
         } catch (error) {
@@ -216,6 +216,10 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       const signer = provider.getSigner()
       const signerAddress = await signer.getAddress()
       
+      // Get chain ID 
+      const network = await provider.getNetwork()
+      console.log(`Connected to network ID: ${network.chainId}`)
+      
       // Log connected account
       console.log(`Connected with account: ${signerAddress}`);
       
@@ -241,7 +245,9 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
           
           if (isAdmin) {
             // Use direct contract call for granting role
-            const grantTx = await contract.grantRole(MINTER_ROLE, signerAddress)
+            const grantTx = await contract.grantRole(MINTER_ROLE, signerAddress, {
+              gasLimit: ethers.utils.hexlify(500000)
+            })
             await grantTx.wait()
             console.log(`Successfully granted MINTER_ROLE to ${signerAddress}`)
             
@@ -268,7 +274,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       // Get the actual next token ID (from totalSupply)
       try {
         const totalSupply = await contract.totalSupply();
-        const actualNextTokenId = totalSupply.add(1);
+        const actualNextTokenId = BigInt(totalSupply.toString()) + BigInt(1);
         console.log(`Using tokenId: ${actualNextTokenId.toString()} instead of provided ${tokenId.toString()}`);
         tokenId = actualNextTokenId;
       } catch (error) {
@@ -296,13 +302,26 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         }
       })
       
+      // Check if timestamps are correct
+      if (metadata.validFrom >= metadata.validUntil) {
+        console.error("Invalid time range: validFrom must be before validUntil");
+        toast.error("Invalid time range: Start time must be before end time");
+        throw new Error("Invalid time range");
+      }
+      
       // Call mintTicket directly with signer and explicit gas parameters
       const tx = await contract.mintTicket(
         to, 
         tokenId, 
-        metadata,
+        [
+          metadata.eventId,
+          metadata.price,
+          metadata.validFrom,
+          metadata.validUntil,
+          metadata.isTransferable
+        ],
         {
-          gasLimit: 500000,  // Set a higher gas limit
+          gasLimit: ethers.utils.hexlify(1000000)  // Set a higher gas limit
         }
       );
       
@@ -371,7 +390,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       
       // Execute the transfer
       const tx = await contract.transferFrom(from, to, tokenId, {
-        gasLimit: 300000 // Set a higher gas limit
+        gasLimit: ethers.utils.hexlify(300000) // Set a higher gas limit
       })
       await tx.wait()
       

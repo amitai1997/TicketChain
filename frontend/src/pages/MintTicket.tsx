@@ -1,6 +1,6 @@
-// File: src/pages/MintTicket.tsx
 import { ethers } from "ethers";
 import TicketNFTAbi from "@/artifacts/contracts/TicketNFT.sol/TicketNFT.json";
+// File: src/pages/MintTicket.tsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ticket, Clock, Tag, Calendar, RefreshCw } from 'lucide-react'
@@ -12,10 +12,9 @@ import { toast } from 'sonner'
 const MintTicket = () => {
   const navigate = useNavigate()
   const { isConnected, address } = useAccount()
-  const { mintNewTicket, nextTokenId, checkHasRole } = useTicketNFT()
+  const { mintNewTicket, totalSupply, contractAddress } = useTicketNFT()
   const [isMinting, setIsMinting] = useState(false)
   const [hasMinterRole, setHasMinterRole] = useState(false)
-  const contractAddr = '0x0165878A594ca255338adfa4d48449f69242Eb8F';
 
   // Form state
   const [formData, setFormData] = useState({
@@ -36,7 +35,7 @@ const MintTicket = () => {
           
           const provider = new ethers.providers.Web3Provider(window.ethereum)
           const contract = new ethers.Contract(
-            contractAddr,
+            contractAddress,
             TicketNFTAbi.abi,
             provider
           )
@@ -56,7 +55,7 @@ const MintTicket = () => {
     }
     
     checkMinterRole()
-  }, [isConnected, address, contractAddr])
+  }, [isConnected, address, contractAddress])
 
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -84,8 +83,8 @@ const MintTicket = () => {
     try {
       setIsMinting(true)
       
-      // Always use the current nextTokenId from the hook
-      const tokenId = nextTokenId || 1n
+      // Calculate token ID based on total supply
+      const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n
       
       // Convert dates to Unix timestamps
       const validFrom = Math.floor(formData.validFrom.getTime() / 1000)
@@ -93,30 +92,102 @@ const MintTicket = () => {
       
       console.log('Minting with params:', {
         address,
-        newTokenId: tokenId.toString(),
+        newTokenId: newTokenId.toString(),
         eventId: formData.eventId,
         price: formData.price,
         validFrom,
         validUntil,
-        isTransferable: formData.isTransferable
+        isTransferable: formData.isTransferable,
+        contractAddress
       })
       
-      await mintNewTicket(
-        address,
-        tokenId,
-        BigInt(formData.eventId),
-        formData.price,
-        validFrom,
-        validUntil,
-        formData.isTransferable
-      )
+      // Add a short delay to allow MetaMask to initialize
+      await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Redirect to dashboard after successful minting
-      setTimeout(() => {
-        navigate('/')
-      }, 2000)
+      // Call direct interaction instead of using the hook
+      try {
+        // Create ethers provider and signer
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const contract = new ethers.Contract(contractAddress, TicketNFTAbi.abi, signer)
+        
+        // Get MINTER_ROLE
+        const MINTER_ROLE = await contract.MINTER_ROLE()
+        
+        // Check if account has MINTER_ROLE
+        const userAddress = await signer.getAddress()
+        const hasMinterRole = await contract.hasRole(MINTER_ROLE, userAddress)
+        
+        console.log(`User ${userAddress} has MINTER_ROLE: ${hasMinterRole}`)
+        
+        if (!hasMinterRole) {
+          // Try to grant MINTER_ROLE
+          const DEFAULT_ADMIN_ROLE = await contract.DEFAULT_ADMIN_ROLE()
+          const isAdmin = await contract.hasRole(DEFAULT_ADMIN_ROLE, userAddress)
+          
+          console.log(`User ${userAddress} has DEFAULT_ADMIN_ROLE: ${isAdmin}`)
+          
+          if (isAdmin) {
+            console.log('Granting MINTER_ROLE...')
+            const tx = await contract.grantRole(MINTER_ROLE, userAddress)
+            await tx.wait()
+            console.log('MINTER_ROLE granted!')
+          } else {
+            throw new Error('You do not have permission to mint tickets')
+          }
+        }
+        
+        // Prepare metadata
+        const metadata = {
+          eventId: BigInt(formData.eventId),
+          price: ethers.utils.parseEther(formData.price),
+          validFrom: BigInt(validFrom),
+          validUntil: BigInt(validUntil),
+          isTransferable: formData.isTransferable
+        }
+        
+        console.log('About to mint ticket with params:', {
+          to: userAddress,
+          tokenId: newTokenId.toString(),
+          metadata: {
+            eventId: metadata.eventId.toString(),
+            price: metadata.price.toString(),
+            validFrom,
+            validUntil,
+            isTransferable: metadata.isTransferable
+          }
+        })
+        
+        // Call mintTicket
+        const tx = await contract.mintTicket(userAddress, newTokenId, metadata)
+        console.log('Transaction sent:', tx.hash)
+        
+        const receipt = await tx.wait()
+        console.log('Transaction confirmed:', receipt)
+        
+        toast.success('Ticket successfully minted!')
+        
+        // Redirect to dashboard after successful minting
+        setTimeout(() => {
+          navigate('/')
+        }, 2000)
+      } catch (error) {
+        console.error('Direct contract interaction error:', error)
+        if (error.message) console.error('Error message:', error.message)
+        if (error.reason) console.error('Error reason:', error.reason)
+        if (error.code) console.error('Error code:', error.code)
+        if (error.data) console.error('Error data:', error.data)
+        
+        throw error
+      }
     } catch (error) {
       console.error('Error minting ticket:', error)
+      toast.error('Failed to mint ticket')
+      
+      // Add specific error details to the toast
+      if (error.reason) {
+        toast.error(`Error: ${error.reason}`)
+      }
     } finally {
       setIsMinting(false)
     }
