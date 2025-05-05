@@ -25,12 +25,12 @@ module.exports = {
   networks: {
     // Local development
     hardhat: {
-      chainId: 31337
+      chainId: 1337
     },
     // Local node
     localhost: {
       url: "http://127.0.0.1:8545",
-      chainId: 31337
+      chainId: 1337
     },
     // Sepolia testnet
     sepolia: {
