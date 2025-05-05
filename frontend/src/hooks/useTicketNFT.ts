@@ -194,7 +194,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     }
   }, [userAddress, isConnected, contractAddr, fetchTicketData])
 
-  // Function to mint a new ticket
+  // Function to mint a new ticket - UPDATED WITH WORKING APPROACH
   const mintNewTicket = useCallback(async (
     to: string,
     tokenId: bigint,
@@ -205,170 +205,87 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     isTransferable: boolean
   ) => {
     try {
-      // Check if account has MINTER_ROLE
+      console.log(`⭐ Minting new ticket for ${to} with tokenId ${tokenId}...`);
+      
+      // Check provider availability
       if (!window.ethereum) {
         throw new Error('No provider available')
       }
 
-      console.log(`Using contract address: ${contractAddr}`);
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      const signer = provider.getSigner()
-      const signerAddress = await signer.getAddress()
-
-      // Get chain ID
-      const network = await provider.getNetwork()
-      console.log(`Connected to network ID: ${network.chainId}`)
-
-      // Log connected account
-      console.log(`Connected with account: ${signerAddress}`);
-
-      // Create contract instance with signer
-      const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, signer)
-
-      // Get MINTER_ROLE
-      const MINTER_ROLE = await contract.MINTER_ROLE()
-      console.log(`MINTER_ROLE hash: ${MINTER_ROLE}`);
-
-      // Check if signer has MINTER_ROLE
-      const hasMinterRole = await contract.hasRole(MINTER_ROLE, signerAddress)
-      console.log(`Has MINTER_ROLE: ${hasMinterRole}`);
-
-      if (!hasMinterRole) {
-        console.log(`Granting MINTER_ROLE to ${signerAddress}...`)
-
-        try {
-          // Try to grant MINTER_ROLE to self (assuming we're admin)
-          const DEFAULT_ADMIN_ROLE = await contract.DEFAULT_ADMIN_ROLE()
-          const isAdmin = await contract.hasRole(DEFAULT_ADMIN_ROLE, signerAddress)
-          console.log(`Has DEFAULT_ADMIN_ROLE: ${isAdmin}`);
-
-          if (isAdmin) {
-            // Use direct contract call for granting role
-            const grantTx = await contract.grantRole(MINTER_ROLE, signerAddress, {
-              gasLimit: ethers.utils.hexlify(500000)
-            })
-            await grantTx.wait()
-            console.log(`Successfully granted MINTER_ROLE to ${signerAddress}`)
-
-            // Double check role was granted
-            const newHasMinterRole = await contract.hasRole(MINTER_ROLE, signerAddress)
-            console.log(`Now has MINTER_ROLE: ${newHasMinterRole}`);
-
-            if (!newHasMinterRole) {
-              throw new Error("Failed to grant MINTER_ROLE despite transaction success")
-            }
-          } else {
-            throw new Error(`Account ${signerAddress} is not an admin and cannot mint tickets`)
-          }
-        } catch (error) {
-          console.error('Error granting MINTER_ROLE:', error)
-          toast.error('Unable to grant minter permissions')
-          throw new Error('Permission denied: Not a minter and unable to grant role')
-        }
-      }
-
-      // Convert price to Wei
-      const priceInWei = parseEther(price)
-
-      // Get the actual next token ID (from totalSupply)
-      try {
-        const totalSupply = await contract.totalSupply();
-        const actualNextTokenId = BigInt(totalSupply.toString()) + BigInt(1);
-        console.log(`Using tokenId: ${actualNextTokenId.toString()} instead of provided ${tokenId.toString()}`);
-        tokenId = actualNextTokenId;
-      } catch (error) {
-        console.log("Couldn't get total supply, using provided tokenId:", tokenId.toString());
-      }
-
-      // Prepare metadata
+      // Connect to the network 
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      console.log(`Connected to network with signer: ${await signer.getAddress()}`);
+      
+      // Connect to the contract
+      const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, signer);
+      console.log(`Connected to contract at ${contractAddr}`);
+      
+      // Prepare metadata - this approach works with our contract
+      // Convert all numeric values to BigNumber/BigInt
       const metadata = {
-        eventId,
-        price: priceInWei,
+        eventId: BigInt(eventId),
+        price: ethers.utils.parseEther(price),
         validFrom: BigInt(validFrom),
         validUntil: BigInt(validUntil),
-        isTransferable
-      }
-
-      console.log('Minting with params:', {
-        to,
-        tokenId: tokenId.toString(),
-        metadata: {
-          eventId: metadata.eventId.toString(),
-          price: metadata.price.toString(),
-          validFrom: metadata.validFrom.toString(),
-          validUntil: metadata.validUntil.toString(),
-          isTransferable: metadata.isTransferable
-        }
-      })
-
-      // Check if timestamps are correct
-      if (metadata.validFrom >= metadata.validUntil) {
-        console.error("Invalid time range: validFrom must be before validUntil");
-        toast.error("Invalid time range: Start time must be before end time");
-        throw new Error("Invalid time range");
-      }
-
-      // Call mintTicket directly with signer and explicit gas parameters
+        isTransferable: isTransferable
+      };
+      
+      console.log(`Prepared metadata:`, {
+        eventId: metadata.eventId.toString(),
+        price: ethers.utils.formatEther(metadata.price) + " ETH",
+        validFrom: new Date(Number(metadata.validFrom) * 1000).toLocaleString(),
+        validUntil: new Date(Number(metadata.validUntil) * 1000).toLocaleString(),
+        isTransferable: metadata.isTransferable
+      });
+      
+      // Call contract with the method that worked in our test
+      console.log(`Calling mintTicket with explicit gas limit...`);
       const tx = await contract.mintTicket(
         to,
         tokenId,
-        [
-          metadata.eventId,
-          metadata.price,
-          metadata.validFrom,
-          metadata.validUntil,
-          metadata.isTransferable
-        ],
-        {
-          gasLimit: ethers.utils.hexlify(1000000)  // Set a higher gas limit
-        }
+        metadata,
+        { gasLimit: ethers.utils.hexlify(5000000) } // High gas limit
       );
-
-      console.log('Transaction submitted:', tx.hash);
-
-      const receipt = await tx.wait()
-
-      console.log('Mint transaction successful:', receipt);
-
-      toast.success('Ticket minted successfully!')
-      return tx
-    } catch (error) {
-      console.error('Error minting ticket:', error)
-
-      // Try to extract the revert reason if available
-      let revertReason = "Unknown error";
-
-      if (error.data) {
-        try {
-          // Get error data for revert reason
-          const errorData = error.data;
-          if (errorData.message) revertReason = errorData.message;
-        } catch (e) {
-          console.error("Error extracting revert reason:", e);
-        }
-      } else if (error.reason) {
-        revertReason = error.reason;
-      } else if (error.error && error.error.message) {
-        revertReason = error.error.message;
-      } else if (error.message) {
-        revertReason = error.message;
+      
+      console.log(`Transaction sent: ${tx.hash}`);
+      
+      // Wait for transaction confirmation
+      const receipt = await tx.wait();
+      console.log(`Transaction confirmed with hash: ${receipt.transactionHash}`);
+      
+      // Verify the token was minted
+      try {
+        const owner = await contract.ownerOf(tokenId);
+        console.log(`Token #${tokenId} minted to: ${owner}`);
+        
+        toast.success(`Ticket #${tokenId} minted successfully!`);
+      } catch (error) {
+        console.error(`Error verifying minted token:`, error);
       }
-
-      // Extract more specific error information if available
-      const errorMessage = error.message || 'Unknown error';
-      const reason = error.reason || (error.error && error.error.reason);
-
+      
+      return tx;
+    } catch (error) {
+      console.error('❌ Error minting ticket:', error);
+      
+      // Extract useful error info
+      let errorMessage = 'Unknown error';
+      if (error.reason) {
+        errorMessage = error.reason;
+      } else if (error.error && error.error.message) {
+        errorMessage = error.error.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       console.error('Error details:', {
         message: errorMessage,
-        reason: reason,
+        code: error.code,
         data: error.data,
-        transaction: error.transaction,
-        revertReason: revertReason
       });
-
-      toast.error(`Failed to mint ticket: ${revertReason}`)
-      throw error
+      
+      toast.error(`Failed to mint ticket: ${errorMessage}`);
+      throw error;
     }
   }, [contractAddr])
 
