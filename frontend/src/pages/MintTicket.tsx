@@ -1,6 +1,6 @@
+// File: src/pages/MintTicket.tsx
 import { ethers } from "ethers";
 import TicketNFTAbi from "@/artifacts/contracts/TicketNFT.sol/TicketNFT.json";
-// File: src/pages/MintTicket.tsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ticket, Clock, Tag, Calendar, RefreshCw } from 'lucide-react'
@@ -12,9 +12,10 @@ import { toast } from 'sonner'
 const MintTicket = () => {
   const navigate = useNavigate()
   const { isConnected, address } = useAccount()
-  const { mintNewTicket, totalSupply, checkHasRole } = useTicketNFT()
+  const { mintNewTicket, nextTokenId, checkHasRole } = useTicketNFT()
   const [isMinting, setIsMinting] = useState(false)
   const [hasMinterRole, setHasMinterRole] = useState(false)
+  const contractAddr = '0x0165878A594ca255338adfa4d48449f69242Eb8F';
 
   // Form state
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ const MintTicket = () => {
           
           const provider = new ethers.providers.Web3Provider(window.ethereum)
           const contract = new ethers.Contract(
-            '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+            contractAddr,
             TicketNFTAbi.abi,
             provider
           )
@@ -55,7 +56,7 @@ const MintTicket = () => {
     }
     
     checkMinterRole()
-  }, [isConnected, address])
+  }, [isConnected, address, contractAddr])
 
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -83,8 +84,8 @@ const MintTicket = () => {
     try {
       setIsMinting(true)
       
-      // Calculate token ID based on total supply
-      const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n
+      // Always use the current nextTokenId from the hook
+      const tokenId = nextTokenId || 1n
       
       // Convert dates to Unix timestamps
       const validFrom = Math.floor(formData.validFrom.getTime() / 1000)
@@ -92,7 +93,7 @@ const MintTicket = () => {
       
       console.log('Minting with params:', {
         address,
-        newTokenId: newTokenId.toString(),
+        newTokenId: tokenId.toString(),
         eventId: formData.eventId,
         price: formData.price,
         validFrom,
@@ -102,7 +103,7 @@ const MintTicket = () => {
       
       await mintNewTicket(
         address,
-        newTokenId,
+        tokenId,
         BigInt(formData.eventId),
         formData.price,
         validFrom,
@@ -110,15 +111,12 @@ const MintTicket = () => {
         formData.isTransferable
       )
       
-      toast.success('Ticket successfully minted!')
-      
       // Redirect to dashboard after successful minting
       setTimeout(() => {
         navigate('/')
       }, 2000)
     } catch (error) {
       console.error('Error minting ticket:', error)
-      toast.error('Failed to mint ticket')
     } finally {
       setIsMinting(false)
     }
