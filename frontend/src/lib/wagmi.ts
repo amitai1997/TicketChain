@@ -1,24 +1,23 @@
 // File: src/lib/wagmi.ts
-import { configureChains, createClient } from 'wagmi'
+import { configureChains, createConfig } from 'wagmi'
 import { mainnet, sepolia, hardhat, polygonMumbai } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { 
   injectedWallet, 
   metaMaskWallet, 
   coinbaseWallet, 
-  walletConnectWallet 
 } from '@rainbow-me/rainbowkit/wallets'
 
 // Get RPC URL from environment variables
-const rpcUrl = import.meta.env.VITE_RPC_URL || 'http://localhost:8545'
+const rpcUrl = 'http://localhost:8545'
 
 // Configure chains & providers
-const { chains, provider, webSocketProvider } = configureChains(
+const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     // Add networks based on environment
-    ...(import.meta.env.DEV ? [hardhat] : []),
+    hardhat, 
     sepolia, 
     polygonMumbai,
     mainnet
@@ -35,33 +34,24 @@ const { chains, provider, webSocketProvider } = configureChains(
   ]
 )
 
-// Configure wallets for RainbowKit
-const { wallets } = getDefaultWallets({
-  appName: 'TicketChain',
-  projectId: 'ticketchain', // Wallet Connect project ID
-  chains,
-})
-
-// Add more wallet options beyond the defaults
+// Add wallet connectors without WalletConnect to avoid dependency issues
 const connectors = connectorsForWallets([
-  ...wallets,
   {
-    groupName: 'More Wallets',
+    groupName: 'Recommended',
     wallets: [
       injectedWallet({ chains }),
       metaMaskWallet({ projectId: 'ticketchain', chains }),
       coinbaseWallet({ appName: 'TicketChain', chains }),
-      walletConnectWallet({ projectId: 'ticketchain', chains }),
     ],
   },
 ])
 
 // Create the Wagmi client
-export const wagmiClient = createClient({
+export const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  provider,
-  webSocketProvider,
+  publicClient,
+  webSocketPublicClient,
 })
 
 export { chains }

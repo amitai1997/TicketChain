@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useContractRead, useContractWrite, useAccount, useContractEvent } from 'wagmi'
 import { parseEther } from 'viem'
 import { toast } from 'sonner'
+import { ethers } from 'ethers'
 
 // Import contract ABI
 // Using require since import can have issues with JSON files in TypeScript
-import TicketNFTAbi from '../../artifacts/contracts/TicketNFT.sol/TicketNFT.json'
+import TicketNFTAbi from '../artifacts/contracts/TicketNFT.sol/TicketNFT.json'
 
 // Type definitions from contract
 export interface TicketMetadata {
@@ -30,7 +31,7 @@ interface UseTicketNFTProps {
 
 export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
   // Get contract address from props or env
-  const contractAddr = contractAddress || import.meta.env.VITE_CONTRACT_ADDRESS
+  const contractAddr = contractAddress || '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 
   // State to track user's tickets
   const [userTickets, setUserTickets] = useState<Ticket[]>([])
@@ -69,8 +70,8 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     listener(logs) {
       // Refresh user tickets when an event involves the user
       const isUserInvolved = logs.some(log => {
-        const { args } = log
-        return args.from === userAddress || args.to === userAddress
+        const { from, to } = log.args as unknown as { from: string, to: string }
+        return from === userAddress || to === userAddress
       })
 
       if (isUserInvolved) {
@@ -83,11 +84,11 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
   const fetchTicketData = useCallback(async (tokenId: bigint): Promise<Ticket | null> => {
     try {
       // Create an object to interact with the contract
-      const provider = window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null
-      
-      if (!provider) {
+      if (!window.ethereum) {
         throw new Error('No provider available')
       }
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
       
       const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider)
       
@@ -130,11 +131,11 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       setIsLoading(true)
       
       // Create an object to interact with the contract
-      const provider = window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null
-      
-      if (!provider) {
+      if (!window.ethereum) {
         throw new Error('No provider available')
       }
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
       
       const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider)
       

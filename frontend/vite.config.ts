@@ -11,8 +11,17 @@ export default defineConfig({
     },
   },
   define: {
-    // Prevents direct reference to process.env vars in the client code
-    // They should be accessed via import.meta.env
+    // Handle for ethers.js
+    global: 'globalThis',
+    // Necessary for imported JSON files
     'process.env': {}
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        '@safe-globalThis/safe-apps-provider',
+        '@safe-globalThis/safe-apps-sdk'
+      ]
+    }
   }
 })

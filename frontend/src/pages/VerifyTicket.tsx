@@ -1,7 +1,7 @@
 // File: src/pages/VerifyTicket.tsx
 import { useState } from 'react'
-import { Search, TicketCheck, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
-import { useTicketNFT, Ticket } from '@/hooks/useTicketNFT'
+import { Search, Ticket as TicketIcon, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { useTicketNFT } from '@/hooks/useTicketNFT'
 import { toast } from 'sonner'
 
 // Format date from timestamp
@@ -18,7 +18,7 @@ const formatPrice = (priceInWei: bigint) => {
 
 const VerifyTicket = () => {
   const [ticketId, setTicketId] = useState('')
-  const [verifiedTicket, setVerifiedTicket] = useState<Ticket | null>(null)
+  const [verifiedTicket, setVerifiedTicket] = useState<any | null>(null)
   const [isVerifying, setIsVerifying] = useState(false)
   const [isVerified, setIsVerified] = useState<boolean | null>(null)
   const { fetchTicketData } = useTicketNFT()
@@ -65,7 +65,7 @@ const VerifyTicket = () => {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8 text-center">
-        <TicketCheck className="h-12 w-12 mx-auto mb-4 text-primary" />
+        <TicketIcon className="h-12 w-12 mx-auto mb-4 text-primary" />
         <h1 className="text-3xl font-bold">Verify Ticket</h1>
         <p className="text-muted-foreground">Check if a ticket is valid and authentic</p>
       </div>

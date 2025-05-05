@@ -49,7 +49,7 @@ const MintTicket = () => {
       setIsMinting(true)
       
       // Calculate token ID based on total supply
-      const newTokenId = totalSupply ? totalSupply + 1n : 1n
+      const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n
       
       // Convert dates to Unix timestamps
       const validFrom = Math.floor(formData.validFrom.getTime() / 1000)
