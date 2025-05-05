@@ -45,6 +45,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'totalSupply',
+    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
     watch: true,
   })
 
@@ -53,6 +54,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'mintTicket',
+    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
   })
 
   // Setup contract write for transferring tickets
@@ -60,6 +62,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     address: contractAddr as `0x${string}`,
     abi: TicketNFTAbi.abi,
     functionName: 'transferFrom',
+    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
   })
 
   // Listen for Transfer events
@@ -70,7 +73,9 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
     listener(logs) {
       // Refresh user tickets when an event involves the user
       const isUserInvolved = logs.some(log => {
-        const { from, to } = log.args as unknown as { from: string, to: string }
+        // Safely extract from and to address from the event logs
+        // @ts-ignore - Type issues with args extraction
+        const { from, to } = (log.args || {}) as { from?: string, to?: string }
         return from === userAddress || to === userAddress
       })
 
@@ -78,6 +83,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         fetchUserTickets()
       }
     },
+    chainId: 1337, // Use 1337 (0x539) instead of 31337 (0x7a69)
   })
 
   // Function to fetch a single ticket's data
@@ -143,7 +149,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       const balance = await contract.balanceOf(userAddress)
       
       // If user has no tickets, return empty array
-      if (balance === 0n) {
+      if (balance === 0n || balance.eq(0)) {
         setUserTickets([])
         setIsLoading(false)
         return
@@ -151,7 +157,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
       
       // For each token, get the token ID
       const ticketPromises = []
-      for (let i = 0; i < balance; i++) {
+      for (let i = 0; i < Number(balance); i++) {
         const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i)
         ticketPromises.push(fetchTicketData(tokenId))
       }

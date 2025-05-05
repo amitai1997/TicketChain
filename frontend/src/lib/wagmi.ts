@@ -1,6 +1,6 @@
 // File: src/lib/wagmi.ts
 import { configureChains, createConfig } from 'wagmi'
-import { mainnet, sepolia, hardhat, polygonMumbai } from 'wagmi/chains'
+import { mainnet, sepolia, polygonMumbai } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
@@ -10,14 +10,35 @@ import {
   coinbaseWallet, 
 } from '@rainbow-me/rainbowkit/wallets'
 
+// Custom Hardhat chain with ID 1337 (0x539) to match MetaMask's expected value
+const hardhatChain = {
+  id: 1337,
+  name: 'Hardhat Local',
+  network: 'hardhat',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['http://127.0.0.1:8545'],
+    },
+    public: {
+      http: ['http://127.0.0.1:8545'],
+    },
+  },
+  testnet: true,
+}
+
 // Get RPC URL from environment variables
-const rpcUrl = 'http://localhost:8545'
+const rpcUrl = 'http://127.0.0.1:8545'
 
 // Configure chains & providers
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     // Add networks based on environment
-    hardhat, 
+    hardhatChain, 
     sepolia, 
     polygonMumbai,
     mainnet
@@ -34,7 +55,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   ]
 )
 
-// Add wallet connectors without WalletConnect to avoid dependency issues
+// Configure wallets for RainbowKit
 const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
