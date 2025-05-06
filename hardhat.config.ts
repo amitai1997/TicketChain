@@ -1,49 +1,49 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "hardhat-contract-sizer";
-import "dotenv/config";
+import { HardhatUserConfig } from 'hardhat/config';
+import '@nomicfoundation/hardhat-toolbox';
+import '@typechain/hardhat';
+import 'hardhat-gas-reporter';
+import 'hardhat-contract-sizer';
+import 'dotenv/config';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: '0.8.20',
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 200,
       },
       debug: {
-        revertStrings: "strip"
+        revertStrings: 'strip',
       },
       // Add increased size limit
-      viaIR: true
-    }
+      viaIR: true,
+    },
   },
   networks: {
     hardhat: {
       chainId: 1337,
-      allowUnlimitedContractSize: true
-    }
+      allowUnlimitedContractSize: true,
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD"
+    currency: 'USD',
   },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [':TicketNFT$']
+    only: [':TicketNFT$'],
   },
   mocha: {
-    timeout: 100000 // 100 seconds
+    timeout: 100000, // 100 seconds
   },
   typechain: {
     outDir: 'typechain-types',
-    target: 'ethers-v6'
-  }
+    target: 'ethers-v6',
+  },
 };
 
 export default config;

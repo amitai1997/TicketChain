@@ -16,6 +16,7 @@ If you discover a security vulnerability within the TicketChain project, we appr
 #### Reporting Methods
 
 1. **Email**: security@ticketchain.org
+
    - Encrypted communication preferred
    - Include detailed information about the vulnerability
 
@@ -41,11 +42,13 @@ If you discover a security vulnerability within the TicketChain project, we appr
 ### Vulnerability Classification
 
 We classify vulnerabilities based on:
+
 - Potential impact
 - Exploitability
 - Complexity of attack
 
 Severity Levels:
+
 - **Critical**: Immediate threat, potential complete system compromise
 - **High**: Significant risk, potential data exposure or manipulation
 - **Medium**: Moderate risk, limited exploitation potential
@@ -54,6 +57,7 @@ Severity Levels:
 ### Rewards and Recognition
 
 We offer the following for responsible vulnerability disclosure:
+
 - Credit in our security hall of fame
 - Potential bug bounty rewards
 - Public acknowledgment (with your consent)
@@ -61,6 +65,7 @@ We offer the following for responsible vulnerability disclosure:
 ### Safe Harbor
 
 We commit to:
+
 - Not taking legal action for responsible security research
 - Providing safe harbor for good-faith vulnerability reporting
 - Maintaining confidentiality of reported issues
@@ -68,12 +73,14 @@ We commit to:
 ## Security Best Practices
 
 ### For Users
+
 - Keep wallet private keys secure
 - Use hardware wallets when possible
 - Enable two-factor authentication
 - Regularly update wallet software
 
 ### For Contributors
+
 - Follow secure coding guidelines
 - Use latest security libraries
 - Conduct regular security audits
@@ -82,6 +89,7 @@ We commit to:
 ## Emergency Contact
 
 In case of urgent security concerns:
+
 - Email: emergency-security@ticketchain.org
 - PGP Fingerprint: [To be added]
 

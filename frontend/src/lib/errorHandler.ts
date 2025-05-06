@@ -7,7 +7,7 @@ export const setupErrorHandling = () => {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
-      error: event.error
+      error: event.error,
     });
   });
 
@@ -15,9 +15,9 @@ export const setupErrorHandling = () => {
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', {
       reason: event.reason,
-      promise: event.promise
+      promise: event.promise,
     });
-    
+
     // Prevent default error handling
     event.preventDefault();
   });
@@ -30,7 +30,7 @@ export const setupErrorHandling = () => {
   window.addEventListener('online', () => {
     console.log('Network connection restored');
   });
-}
+};
 
 // Enhanced logging for blockchain-related errors
 export const logBlockchainError = (context: string, error: any) => {
@@ -40,6 +40,6 @@ export const logBlockchainError = (context: string, error: any) => {
     code: error.code,
     reason: error.reason,
     stack: error.stack,
-    details: error.details || 'No additional details'
+    details: error.details || 'No additional details',
   });
-}
+};

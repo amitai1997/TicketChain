@@ -8,8 +8,9 @@
     "avoid-low-level-calls": "warn",
     "no-inline-assembly": "warn",
     "contract-name-camelcase": "error",
-    "ordering": "warn",
-    "prettier/prettier": "error",
+    "ordering": "off",
+    "prettier/prettier": "off",
+    "quotes": "off",
     "max-states-count": ["warn", 15]
   }
 }

@@ -1,7 +1,7 @@
-import hardhat from "hardhat";
-import { expect } from "chai";
-import { TicketNFT } from "../../types/typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import hardhat from 'hardhat';
+import { expect } from 'chai';
+import { TicketNFT } from '../../types/typechain-types';
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('TicketNFT Lifecycle', () => {
   let ticketNFT: TicketNFT;
@@ -28,8 +28,8 @@ describe('TicketNFT Lifecycle', () => {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
       validFrom: BigInt(currentTime + 3600), // 1 hour from now
-      validUntil: BigInt(currentTime + 7200),   // 2 hours from now
-      isTransferable: true
+      validUntil: BigInt(currentTime + 7200), // 2 hours from now
+      isTransferable: true,
     };
 
     await ticketNFT.connect(minter).mintTicket(buyer.address, 1, ticketMetadata);
@@ -47,9 +47,9 @@ describe('TicketNFT Lifecycle', () => {
     const ticketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600),  // 1 hour from now
+      validFrom: BigInt(currentTime + 3600), // 1 hour from now
       validUntil: BigInt(currentTime + 7200), // 2 hours from now
-      isTransferable: true
+      isTransferable: true,
     };
 
     await ticketNFT.connect(minter).mintTicket(buyer.address, 1, ticketMetadata);
@@ -74,14 +74,16 @@ describe('TicketNFT Lifecycle', () => {
       price: hardhat.ethers.parseEther('0.5'),
       validFrom: BigInt(currentTime + 3600),
       validUntil: BigInt(currentTime + 7200),
-      isTransferable: false
+      isTransferable: false,
     };
 
     await ticketNFT.connect(minter).mintTicket(buyer.address, 1, nonTransferableTicketMetadata);
 
     const newOwner = (await hardhat.ethers.getSigners())[3];
     await expect(
-      ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](buyer.address, newOwner.address, 1)
+      ticketNFT
+        .connect(buyer)
+        ['safeTransferFrom(address,address,uint256)'](buyer.address, newOwner.address, 1)
     ).to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
   });
 
@@ -90,9 +92,9 @@ describe('TicketNFT Lifecycle', () => {
     const invalidTicketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 7200),  // Start time after end time
+      validFrom: BigInt(currentTime + 7200), // Start time after end time
       validUntil: BigInt(currentTime + 3600),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await expect(
@@ -107,7 +109,7 @@ describe('TicketNFT Lifecycle', () => {
       price: hardhat.ethers.parseEther('0.5'),
       validFrom: BigInt(currentTime + 3600),
       validUntil: BigInt(currentTime + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await ticketNFT.connect(minter).mintTicket(buyer.address, 1, ticketMetadata);
@@ -116,8 +118,9 @@ describe('TicketNFT Lifecycle', () => {
     await ticketNFT.connect(buyer).burn(1);
 
     // Check that ticket no longer exists
-    await expect(
-      ticketNFT.getTicketMetadata(1)
-    ).to.be.revertedWithCustomError(ticketNFT, 'TicketDoesNotExist');
+    await expect(ticketNFT.getTicketMetadata(1)).to.be.revertedWithCustomError(
+      ticketNFT,
+      'TicketDoesNotExist'
+    );
   });
 });

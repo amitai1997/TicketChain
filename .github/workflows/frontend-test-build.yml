@@ -15,56 +15,55 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8.15.4
+      
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
-          run_install: false
-
+      
       - name: Get pnpm store directory
-        id: pnpm-cache
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
+        id: pnpm-cache
+      
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-
+      
       - name: Install dependencies
         working-directory: ./frontend
         run: pnpm install
-
+      
       - name: Lint
         working-directory: ./frontend
         run: pnpm lint
-
+      
       - name: Run tests
         working-directory: ./frontend
         run: pnpm test
-
+      
       - name: Build
         working-directory: ./frontend
         run: pnpm build
         env:
           VITE_CONTRACT_ADDRESS: '0x0000000000000000000000000000000000000000'
           VITE_RPC_URL: 'https://rpc-sepolia.rockx.com'
-
+      
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -1,25 +1,19 @@
-import { 
-  Chain, 
-  createPublicClient, 
-  createWalletClient, 
-  custom, 
-  http 
-} from 'viem'
-import { hardhat } from 'viem/chains'
+import { Chain, createPublicClient, createWalletClient, custom, http } from 'viem';
+import { hardhat } from 'viem/chains';
 
 // Enhanced error logging
 const enhancedErrorHandler = (error: Error) => {
   console.error('Blockchain Provider Error:', {
     name: error.name,
     message: error.message,
-    stack: error.stack
+    stack: error.stack,
   });
-  
+
   // Additional custom error handling logic
   if (error.message.includes('ENS')) {
     console.warn('ENS resolution error detected. Continuing without resolution.');
   }
-}
+};
 
 // Create public client with detailed error handling
 export const publicClient = createPublicClient({
@@ -28,12 +22,12 @@ export const publicClient = createPublicClient({
   batch: {
     multicall: {
       batchSize: 1024,
-      wait: 16
-    }
+      wait: 16,
+    },
   },
   pollingInterval: 1000,
-  onError: enhancedErrorHandler
-})
+  onError: enhancedErrorHandler,
+});
 
 // Create wallet client with MetaMask
 export const walletClient = createWalletClient({
@@ -42,23 +36,23 @@ export const walletClient = createWalletClient({
   batch: {
     multicall: {
       batchSize: 1024,
-      wait: 16
-    }
+      wait: 16,
+    },
   },
   pollingInterval: 1000,
-  onError: enhancedErrorHandler
-})
+  onError: enhancedErrorHandler,
+});
 
 // Optional: Create a wrapper function to handle provider checks
 export const getProvider = () => {
   try {
     if (!window.ethereum) {
-      console.warn('No Ethereum provider found. Falling back to HTTP provider.')
-      return http('http://localhost:8545')
+      console.warn('No Ethereum provider found. Falling back to HTTP provider.');
+      return http('http://localhost:8545');
     }
-    return custom(window.ethereum)
+    return custom(window.ethereum);
   } catch (error) {
-    console.error('Provider initialization error:', error)
-    return http('http://localhost:8545')
+    console.error('Provider initialization error:', error);
+    return http('http://localhost:8545');
   }
-}
+};

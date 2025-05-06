@@ -1,7 +1,7 @@
-import hardhat from "hardhat";
-import { expect } from "chai";
-import { TicketNFT } from "../../types/typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import hardhat from 'hardhat';
+import { expect } from 'chai';
+import { TicketNFT } from '../../types/typechain-types';
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('TicketNFT Access Control', () => {
   let ticketNFT: TicketNFT;
@@ -44,7 +44,7 @@ describe('TicketNFT Access Control', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await expect(
@@ -58,12 +58,11 @@ describe('TicketNFT Access Control', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
-    await expect(
-      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
-    ).to.not.be.reverted;
+    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)).to.not.be
+      .reverted;
   });
 
   it('should prevent revoking admin role for owner', async () => {
