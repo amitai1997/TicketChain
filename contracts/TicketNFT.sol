@@ -104,24 +104,32 @@ contract TicketNFT is ERC721Enumerable, AccessControl, Pausable, ERC721Burnable 
     super._increaseBalance(account, amount);
   }
 
-  function _update(
-    address to,
-    uint256 tokenId,
-    address auth
-  ) internal virtual override(ERC721, ERC721Enumerable) whenNotPaused returns (address) {
+  // Check if the ticket is transferable and not paused
+  function _checkTicketTransferability(uint256 tokenId, address from) internal view {
     if (paused()) {
       revert ContractPaused();
     }
     
-    // Check ticket transferability
-    address from = _ownerOf(tokenId);
-    if (from != address(0) && to != address(0)) {
+    // Check ticket transferability only for transfers, not mints or burns
+    if (from != address(0)) {
       TicketMetadata storage metadata = _ticketMetadata[tokenId];
       if (!metadata.isTransferable) {
         revert TicketNotTransferable();
       }
     }
+  }
 
+  function _update(
+    address to,
+    uint256 tokenId,
+    address auth
+  ) internal virtual override(ERC721, ERC721Enumerable) whenNotPaused returns (address) {
+    address from = _ownerOf(tokenId);
+    
+    // Perform ticket transferability check
+    _checkTicketTransferability(tokenId, from);
+
+    // Delegate to parent implementation
     return super._update(to, tokenId, auth);
   }
 }

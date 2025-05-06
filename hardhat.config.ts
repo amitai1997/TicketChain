@@ -5,19 +5,22 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'dotenv/config';
 
+// Determine if we're running in coverage mode
+const isCoverage = process.env.SOLIDITY_COVERAGE === 'true';
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
+      // Disable IR when in coverage mode
+      viaIR: !isCoverage,
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 200
       },
       debug: {
         revertStrings: 'strip',
       },
-      // Add increased size limit
-      viaIR: true,
     },
   },
   networks: {

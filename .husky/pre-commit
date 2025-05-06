@@ -3,5 +3,5 @@
 
 # Run linters before committing
 npx solhint 'contracts/**/*.sol'
-# Temporarily disable test coverage to fix linting issues
-# npm run test:coverage
+# Run test coverage with optimized settings
+npm run test:coverage:fix
