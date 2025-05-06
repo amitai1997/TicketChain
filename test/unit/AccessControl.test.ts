@@ -49,7 +49,7 @@ describe('TicketNFT Access Control', () => {
 
     await expect(
       ticketNFT.connect(nonMinter).mintTicket(nonMinter.address, 1, ticketMetadata)
-    ).to.be.revertedWithCustomError(ticketNFT, 'AccessControlUnauthorizedAccount');
+    ).to.be.revertedWithCustomError(ticketNFT, 'MinterRoleRequired');
   });
 
   it('should allow minters to mint tickets', async () => {

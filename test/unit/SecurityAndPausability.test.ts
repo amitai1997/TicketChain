@@ -37,7 +37,7 @@ describe('TicketNFT Security and Pausability', () => {
 
     await expect(
       ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
-    ).to.be.revertedWithCustomError(ticketNFT, 'ContractPaused');
+    ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 
   it('should unpause contract and allow minting', async () => {
@@ -59,7 +59,7 @@ describe('TicketNFT Security and Pausability', () => {
   it('should prevent non-pauser from pausing', async () => {
     await expect(ticketNFT.connect(attacker).pause()).to.be.revertedWithCustomError(
       ticketNFT,
-      'AccessControlUnauthorizedAccount'
+      'PauserRoleRequired'
     );
   });
 
@@ -67,7 +67,7 @@ describe('TicketNFT Security and Pausability', () => {
     await ticketNFT.pause();
     await expect(ticketNFT.connect(attacker).unpause()).to.be.revertedWithCustomError(
       ticketNFT,
-      'AccessControlUnauthorizedAccount'
+      'PauserRoleRequired'
     );
   });
 
@@ -88,6 +88,6 @@ describe('TicketNFT Security and Pausability', () => {
       ticketNFT
         .connect(minter)
         ['safeTransferFrom(address,address,uint256)'](minter.address, newOwner.address, 1)
-    ).to.be.revertedWithCustomError(ticketNFT, 'ContractPaused');
+    ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 });

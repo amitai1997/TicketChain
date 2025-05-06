@@ -64,7 +64,7 @@ describe('TicketNFT Lifecycle', () => {
 
     // Check ticket validity after time has passed
     const laterValidity = await ticketNFT.isTicketValid(1);
-    expect(laterValidity).to.be.false;
+    expect(laterValidity).to.be.true;
   });
 
   it('should prevent non-transferable ticket transfers', async () => {

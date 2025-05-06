@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { TicketNFT } from "../TicketNFT.sol";
+import "../TicketNFT.sol";
 
 error OnlyAttackerAllowed();
 
@@ -15,14 +15,6 @@ contract ReentrancyAttack {
         attacker = msg.sender;
     }
 
-    // Receive function called during transfers
-    receive() external payable {
-        if (address(targetContract).balance > 0) {
-            // Attempt another transfer during the call
-            attack(1);
-        }
-    }
-
     // External function for attack
     function attack(uint256 tokenId) external {
         if (msg.sender != attacker) {
@@ -34,5 +26,13 @@ contract ReentrancyAttack {
         
         // Avoid low-level calls, use transfer functions when possible
         targetContract.safeTransferFrom(address(this), attacker, tokenId);
+    }
+
+    // Receive function called during transfers
+    receive() external payable {
+        if (address(targetContract).balance > 0) {
+            // Attempt another transfer during the call
+            this.attack(1);
+        }
     }
 }
