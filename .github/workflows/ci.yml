@@ -14,7 +14,52 @@ env:
   SOLIDITY_VERSION: 0.8.20
 
 jobs:
-  # … other jobs unchanged …
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Type check
+        run: pnpm run typecheck
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Run unit tests
+        run: pnpm run test:unit
+
+      - name: Run integration tests
+        run: pnpm run test:integration
+
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run security audit
+        run: pnpm audit
 
   build:
     name: Build
@@ -37,7 +82,7 @@ jobs:
         run: pnpm run build:frontend
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4 # ← upgraded to v4
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
@@ -59,7 +104,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4 # ← upgraded to v4
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
 
