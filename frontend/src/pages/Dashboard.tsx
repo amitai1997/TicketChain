@@ -1,12 +1,11 @@
 // File: src/pages/Dashboard.tsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  Calendar, 
-  Clock, 
-  Tag, 
-  ArrowRight, 
-  Ticket as TicketIcon, 
+import {
+  Calendar,
+  Clock,
+  Tag,
+  Ticket as TicketIcon,
   Send,
   RefreshCw
 } from 'lucide-react'
@@ -28,32 +27,32 @@ const formatPrice = (priceInWei: bigint) => {
 }
 
 // Transfer ticket modal component
-const TransferTicketModal = ({ 
-  ticket, 
-  isOpen, 
-  onClose, 
-  onTransfer 
-}: { 
-  ticket: Ticket | null, 
-  isOpen: boolean, 
-  onClose: () => void, 
-  onTransfer: (to: string) => Promise<void> 
+const TransferTicketModal = ({
+  ticket,
+  isOpen,
+  onClose,
+  onTransfer
+}: {
+  ticket: Ticket | null,
+  isOpen: boolean,
+  onClose: () => void,
+  onTransfer: (to: string) => Promise<void>
 }) => {
   const [recipientAddress, setRecipientAddress] = useState('')
   const [isTransferring, setIsTransferring] = useState(false)
-  
+
   if (!isOpen || !ticket) return null
-  
+
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!recipientAddress.trim()) {
       toast.error('Please enter a recipient address')
       return
     }
-    
+
     setIsTransferring(true)
-    
+
     try {
       await onTransfer(recipientAddress)
       onClose()
@@ -63,12 +62,12 @@ const TransferTicketModal = ({
       setIsTransferring(false)
     }
   }
-  
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-background p-6 rounded-lg shadow-xl max-w-md w-full">
         <h2 className="text-xl font-bold mb-4">Transfer Ticket #{ticket.id.toString()}</h2>
-        
+
         <form onSubmit={handleTransfer}>
           <div className="mb-4">
             <label htmlFor="recipient" className="block text-sm font-medium text-muted-foreground mb-1">
@@ -85,7 +84,7 @@ const TransferTicketModal = ({
               aria-label="Recipient wallet address"
             />
           </div>
-          
+
           <div className="flex justify-end space-x-2">
             <button
               type="button"
@@ -120,16 +119,16 @@ const TransferTicketModal = ({
 }
 
 // Ticket card component
-const TicketCard = ({ 
-  ticket, 
-  onTransfer 
-}: { 
-  ticket: Ticket, 
-  onTransfer: (ticket: Ticket) => void 
+const TicketCard = ({
+  ticket,
+  onTransfer
+}: {
+  ticket: Ticket,
+  onTransfer: (ticket: Ticket) => void
 }) => {
   const now = Math.floor(Date.now() / 1000)
   const isExpired = Number(ticket.metadata.validUntil) < now
-  
+
   return (
     <div className="ticket-container">
       <div className="ticket-header">
@@ -138,7 +137,7 @@ const TicketCard = ({
           {isExpired ? 'Expired' : 'Valid'}
         </span>
       </div>
-      
+
       <div className="ticket-info">
         <div className="ticket-detail">
           <span className="ticket-detail-label flex items-center">
@@ -147,7 +146,7 @@ const TicketCard = ({
           </span>
           <span className="ticket-detail-value">#{ticket.metadata.eventId.toString()}</span>
         </div>
-        
+
         <div className="ticket-detail">
           <span className="ticket-detail-label flex items-center">
             <Tag className="h-4 w-4 mr-1" />
@@ -155,7 +154,7 @@ const TicketCard = ({
           </span>
           <span className="ticket-detail-value">{formatPrice(ticket.metadata.price)}</span>
         </div>
-        
+
         <div className="ticket-detail">
           <span className="ticket-detail-label flex items-center">
             <Clock className="h-4 w-4 mr-1" />
@@ -163,7 +162,7 @@ const TicketCard = ({
           </span>
           <span className="ticket-detail-value">{formatDate(ticket.metadata.validFrom)}</span>
         </div>
-        
+
         <div className="ticket-detail">
           <span className="ticket-detail-label flex items-center">
             <Clock className="h-4 w-4 mr-1" />
@@ -172,7 +171,7 @@ const TicketCard = ({
           <span className="ticket-detail-value">{formatDate(ticket.metadata.validUntil)}</span>
         </div>
       </div>
-      
+
       <div className="ticket-actions">
         <button
           className="flex-1 py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center justify-center"
@@ -195,24 +194,24 @@ const Dashboard = () => {
   const { userTickets, isLoading, fetchUserTickets, transferTicketTo } = useTicketNFT()
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
-  
+
   // Handle transfer ticket button click
   const handleTransferClick = (ticket: Ticket) => {
     setSelectedTicket(ticket)
     setIsTransferModalOpen(true)
   }
-  
+
   // Handle ticket transfer
   const handleTransferTicket = async (to: string) => {
     if (!selectedTicket) return
-    
+
     try {
       await transferTicketTo(
         selectedTicket.owner,
         to,
         selectedTicket.id
       )
-      
+
       // Close modal and refresh tickets after a short delay
       setTimeout(() => {
         fetchUserTickets()
@@ -222,13 +221,13 @@ const Dashboard = () => {
       toast.error('Failed to transfer ticket')
     }
   }
-  
+
   // Calculate dashboard stats
   const totalTickets = userTickets.length
-  const validTickets = userTickets.filter(ticket => 
+  const validTickets = userTickets.filter(ticket =>
     Number(ticket.metadata.validUntil) > Math.floor(Date.now() / 1000)
   ).length
-  
+
   // If not connected, show connect wallet message
   if (!isConnected) {
     return (
@@ -246,7 +245,7 @@ const Dashboard = () => {
       </div>
     )
   }
-  
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -262,7 +261,7 @@ const Dashboard = () => {
           Mint New Ticket
         </button>
       </div>
-      
+
       {/* Dashboard stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-6 bg-background border border-border rounded-lg shadow-sm">
@@ -278,7 +277,7 @@ const Dashboard = () => {
           <p className="text-3xl font-bold">{totalTickets - validTickets}</p>
         </div>
       </div>
-      
+
       {isLoading ? (
         <div className="text-center py-12">
           <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
@@ -287,10 +286,10 @@ const Dashboard = () => {
       ) : userTickets.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {userTickets.map((ticket) => (
-            <TicketCard 
-              key={ticket.id.toString()} 
-              ticket={ticket} 
-              onTransfer={handleTransferClick} 
+            <TicketCard
+              key={ticket.id.toString()}
+              ticket={ticket}
+              onTransfer={handleTransferClick}
             />
           ))}
         </div>
@@ -310,7 +309,7 @@ const Dashboard = () => {
           </button>
         </div>
       )}
-      
+
       {/* Transfer ticket modal */}
       <TransferTicketModal
         ticket={selectedTicket}

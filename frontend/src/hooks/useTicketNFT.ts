@@ -1,7 +1,5 @@
-// File: src/hooks/useTicketNFT.ts
 import { useState, useEffect, useCallback } from 'react';
-import { useContractRead, useContractWrite, useAccount, useContractEvent } from 'wagmi';
-import { parseEther } from 'viem';
+import { useContractRead, useAccount } from 'wagmi';
 import { toast } from 'sonner';
 import { ethers } from 'ethers';
 
@@ -33,6 +31,7 @@ interface UseTicketNFTProps {
 
 export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
   // Get contract address from props or env
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [contractAddr, setContractAddr] = useState<string>(
     contractAddress ||
       import.meta.env.VITE_CONTRACT_ADDRESS ||
@@ -62,7 +61,7 @@ export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
         const contract = new ethers.Contract(contractAddr, TicketNFTAbi.abi, provider);
 
         // Try to call a view method to verify the contract exists
-        const name = await contract.name();
+        await contract.name();
         console.log(`Found working contract at ${contractAddr}`);
 
         // Get the next token ID by checking the total supply

@@ -1,4 +1,4 @@
-import { Chain, createPublicClient, createWalletClient, custom, http } from 'viem';
+import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { hardhat } from 'viem/chains';
 
 // Enhanced error logging

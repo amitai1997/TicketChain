@@ -102,7 +102,7 @@ const MintTicket = () => {
       })
 
       // Simplified approach - just use the hook to mint
-      const tx = await mintNewTicket(
+      await mintNewTicket(
         address,
         newTokenId,
         BigInt(formData.eventId),
@@ -120,7 +120,7 @@ const MintTicket = () => {
       }, 2000)
     } catch (error) {
       console.error('Error minting ticket:', error)
-      
+
       // Display a user-friendly error message
       let errorMessage = 'Failed to mint ticket'
       if (error.reason) {
@@ -128,7 +128,7 @@ const MintTicket = () => {
       } else if (error.message) {
         errorMessage += `: ${error.message}`
       }
-      
+
       toast.error(errorMessage)
     } finally {
       setIsMinting(false)
