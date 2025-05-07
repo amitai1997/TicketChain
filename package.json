@@ -10,7 +10,7 @@
   "packageManager": "pnpm@8.6.2",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "test": "NODE_OPTIONS=--loader ts-node/esm pnpm hardhat test test/unit/*.test.ts",
+    "test": "pnpm exec hardhat test test/unit/*.test.ts",
     "test:integration": "pnpm hardhat test test/integration/*.test.ts",
     "test:all": "pnpm hardhat test",
     "test:coverage": "pnpm hardhat coverage",
