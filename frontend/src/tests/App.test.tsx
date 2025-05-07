@@ -1,13 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import App from '../App';
+import AppMock from './mocks/AppMock';
+
+// Mock the useTicketNFT hook
+vi.mock('../hooks/useTicketNFT', () => ({
+  useTicketNFT: vi.fn().mockReturnValue({
+    userTickets: [],
+    isLoading: false,
+    totalSupply: 0,
+    nextTokenId: 1n,
+    fetchUserTickets: vi.fn(),
+    mintNewTicket: vi.fn(),
+    transferTicketTo: vi.fn(),
+    fetchTicketData: vi.fn(),
+    contractAddress: '0x0000000000000000000000000000000000000000',
+  }),
+}));
 
 describe('App', () => {
   it('renders TicketChain in the header', () => {
     render(
       <BrowserRouter>
-        <App />
+        <AppMock />
       </BrowserRouter>
     );
 
@@ -17,7 +32,7 @@ describe('App', () => {
   it('renders footer', () => {
     render(
       <BrowserRouter>
-        <App />
+        <AppMock />
       </BrowserRouter>
     );
 
