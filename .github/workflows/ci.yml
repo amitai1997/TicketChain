@@ -37,6 +37,9 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
+      - name: Ensure pnpm store directory exists
+        run: mkdir -p ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -68,6 +71,9 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Ensure pnpm store directory exists
+        run: mkdir -p ${{ steps.pnpm-cache.outputs.STORE_PATH }}
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
@@ -106,6 +112,9 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Ensure pnpm store directory exists
+        run: mkdir -p ${{ steps.pnpm-cache.outputs.STORE_PATH }}
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
