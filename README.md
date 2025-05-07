@@ -67,6 +67,7 @@ graph TD
 - **Hardhat** - Ethereum development environment with debugging, network management, and testing tools that streamline the development workflow.
 - **Ethers.js** - JavaScript library for interacting with the Ethereum blockchain, chosen for its comprehensive API and Promise-based interface.
 - **Chai/Mocha** - Testing frameworks that enable robust contract testing with readable assertions and organized test suites.
+- **pnpm** - Fast, disk space efficient package manager used for managing the project's dependencies.
 
 ## Quick Start
 
@@ -78,16 +79,26 @@ git clone https://github.com/yourusername/ticketchain.git
 cd ticketchain
 
 # Install dependencies
-npm install
+pnpm install
 
+# Compile contracts
+pnpm compile
+
+# Deploy and mint tickets in one step (NEW!)
+pnpm mint:dev
+```
+
+### Alternative Setup
+
+```bash
 # Start a local Ethereum node
-npx hardhat node
+pnpm hardhat node
 
 # Deploy contracts to the local network (in a new terminal)
-npx hardhat run scripts/deploy.js --network localhost
+pnpm deploy:local
 
 # Mint a test ticket
-npx hardhat run scripts/mint-tickets.js --network localhost
+pnpm mint --network localhost
 ```
 
 ### Docker Quick Start
@@ -102,8 +113,8 @@ docker run -p 8545:8545 ticketchain
 
 ### Prerequisites
 
-- Node.js >= 16.x
-- npm >= 8.x
+- Node.js >= 16.x (v18.x recommended for best compatibility)
+- pnpm >= 8.x
 - Git
 
 ### Environment Configuration
@@ -115,22 +126,26 @@ Create a `.env` file in the project root based on the provided `.env.example`:
 INFURA_API_KEY=your_infura_api_key
 PRIVATE_KEY=your_wallet_private_key
 ETHERSCAN_API_KEY=your_etherscan_api_key
-CONTRACT_ADDRESS=0x123...  # Only needed for script execution
+CONTRACT_ADDRESS=0x123...  # Only needed for script execution on testnets/mainnet
 ```
 
 ### Network Configuration
 
-TicketChain supports multiple Ethereum networks. Default configuration is in `hardhat.config.js`:
+TicketChain supports multiple Ethereum networks. Default configuration is in `hardhat.config.ts`:
 
-```js
-// File: hardhat.config.js
-module.exports = {
+```typescript
+// File: hardhat.config.ts
+const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
+      viaIR: !isCoverage,
       optimizer: {
         enabled: true,
         runs: 200,
+      },
+      debug: {
+        revertStrings: 'strip',
       },
     },
   },
@@ -138,56 +153,59 @@ module.exports = {
     // Local development
     hardhat: {
       chainId: 1337,
-    },
-    // Local node
-    localhost: {
-      url: 'http://127.0.0.1:8545',
-      chainId: 1337,
-    },
-    // Sepolia testnet
-    sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [PRIVATE_KEY],
-      chainId: 11155111,
-      gas: 2100000,
-      gasPrice: 8000000000, // 8 gwei
+      allowUnlimitedContractSize: true,
     },
   },
+  // Other configurations...
 };
 ```
 
 ### Contract Compilation
 
 ```bash
-npx hardhat compile
+pnpm compile
 ```
 
 ## Usage Examples
 
-### Example 1: Deploy the Ticketing Contract
+### Example 1: Deploy and Mint in One Step (NEW!)
+
+Our new streamlined development workflow allows you to deploy and mint tickets in a single command:
 
 ```bash
-# Deploy to local development network
-npx hardhat run scripts/deploy.js --network localhost
+# Deploy contract, set up roles, and mint 3 tickets with different properties
+pnpm mint:dev
+```
+
+**Expected Result:** Contract deployed and 3 tickets minted with varied properties (transferable and non-transferable tickets, different prices, etc.)
+
+### Example 2: Deploy the Ticketing Contract
+
+```bash
+# Deploy to local Hardhat network (NEW!)
+pnpm deploy:dev
+
+# Deploy to running local node
+pnpm deploy:local
 
 # Deploy to Sepolia testnet
-npx hardhat run scripts/deploy.js --network sepolia
+pnpm deploy:testnet
 ```
 
 **Expected Result:** Contract address displayed in terminal and saved to `deployments/{network}-deployment.json`
 
-### Example 2: Mint a New Ticket
+### Example 3: Mint a New Ticket
 
 ```bash
-# Create a basic ticket with default parameters
-npx hardhat run scripts/mint-tickets.js --network localhost
+# Create tickets with saved deployment information
+pnpm mint
 ```
 
-**Expected Result:** Ticket #1 minted with specified metadata (event ID, price, validity period, etc.)
+**Expected Result:** Ticket minted with specified metadata (event ID, price, validity period, etc.)
 
-### Example 3: Transfer a Ticket
+### Example 4: Transfer a Ticket
 
-```js
+```typescript
 // File: scripts/transfer-ticket.js
 const ticketId = 1;
 const recipientAddress = '0xRecipientAddressHere';
@@ -206,26 +224,42 @@ TicketChain includes comprehensive tests for all core functionality.
 ### Running the Test Suite
 
 ```bash
-# Run all tests
-npx hardhat test
+# Run unit tests
+pnpm test
 
-# Run specific test file
-npx hardhat test test/TicketLifecycle.test.ts
+# Run integration tests (NEW!)
+pnpm test:integration
+
+# Run all tests
+pnpm test:all
 
 # Run tests with gas reporting
-REPORT_GAS=true npx hardhat test
+pnpm test:gas
 
 # Run test coverage analysis
-npx hardhat coverage
+pnpm test:coverage
 ```
 
 ### Test Structure
 
-- `test/AccessControl.test.ts` - Tests for role-based permissions
-- `test/SecurityAndPausability.test.ts` - Tests for pausing functionality
-- `test/TicketLifecycle.test.ts` - Tests for ticket creation, validation, and transfer
+- `test/unit/AccessControl.test.ts` - Tests for role-based permissions
+- `test/unit/SecurityAndPausability.test.ts` - Tests for pausing functionality
+- `test/unit/TicketLifecycle.test.ts` - Tests for ticket creation, validation, and transfer
+- `test/integration/TicketTrading.integration.test.ts` - Integration tests for complete ticket lifecycle and multiple ticket management (NEW!)
 
 ## Deployment
+
+### Local Development Deployment (NEW!)
+
+For rapid local development, we now offer streamlined scripts:
+
+```bash
+# Deploy to Hardhat's in-memory network
+pnpm deploy:dev
+
+# Deploy and mint tickets in one operation
+pnpm mint:dev
+```
 
 ### Production Deployment
 
@@ -235,7 +269,7 @@ For production deployments, follow these steps:
 2. Run the deployment script targeting your production network:
 
 ```bash
-npx hardhat run scripts/deploy.js --network mainnet
+pnpm deploy:mainnet
 ```
 
 ### Contract Verification
@@ -243,28 +277,17 @@ npx hardhat run scripts/deploy.js --network mainnet
 To verify your contract on Etherscan:
 
 ```bash
-npx hardhat verify --network sepolia YOUR_DEPLOYED_CONTRACT_ADDRESS
+pnpm verify --network sepolia YOUR_DEPLOYED_CONTRACT_ADDRESS
 ```
 
 ### CI/CD Integration
 
-TicketChain can be integrated with GitHub Actions or other CI providers. Example workflow:
+TicketChain includes integrated CI/CD with GitHub Actions. The workflow includes:
 
-```yaml
-# File: .github/workflows/main.yml
-name: TicketChain CI
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: npm ci
-      - run: npm test
-```
+- Setup stage
+- Code quality checks
+- Unit and integration tests
+- Security scanning with Snyk
 
 ## Configuration Reference
 
@@ -272,10 +295,10 @@ jobs:
 | ------------------ | ---------------- | --------------------------------------------- | ---------------------------- |
 | `MINTER_ROLE`      | Owner            | Controls who can create new tickets           | Contract, grantRole function |
 | `PAUSER_ROLE`      | Owner            | Controls who can pause/unpause the contract   | Contract, grantRole function |
-| `Gas Limit`        | 2,100,000        | Maximum computational effort for transactions | hardhat.config.js            |
-| `Gas Price`        | 8 gwei           | Price per unit of gas (network-specific)      | hardhat.config.js            |
-| `Optimizer Runs`   | 200              | Contract optimization level                   | hardhat.config.js            |
-| `Network Chain ID` | 1337 (localhost) | Blockchain network identifier                 | hardhat.config.js            |
+| `Gas Limit`        | 2,100,000        | Maximum computational effort for transactions | hardhat.config.ts            |
+| `Gas Price`        | 8 gwei           | Price per unit of gas (network-specific)      | hardhat.config.ts            |
+| `Optimizer Runs`   | 200              | Contract optimization level                   | hardhat.config.ts            |
+| `Network Chain ID` | 1337 (localhost) | Blockchain network identifier                 | hardhat.config.ts            |
 
 ## Contributing Guide
 
@@ -293,7 +316,7 @@ We welcome contributions from the community! Follow these steps to contribute:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests (`npx hardhat test`)
+4. Run tests (`pnpm test:all`)
 5. Commit your changes (`git commit -m 'Add some amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
@@ -301,6 +324,7 @@ We welcome contributions from the community! Follow these steps to contribute:
 ### PR Checklist
 
 - [ ] Tests added/updated for new functionality
+- [ ] Integration tests added for complex features
 - [ ] Documentation updated
 - [ ] Code follows project style guide
 - [ ] All tests passing
@@ -323,7 +347,7 @@ We welcome contributions from the community! Follow these steps to contribute:
 - **MetaMask Required**: Requires users to have MetaMask or similar wallet
   - _Workaround_: Implement custodial solution for mainstream adoption
 - **Ethereum Node.js v23 Compatibility**: Some warnings appear with newer Node.js versions
-  - _Workaround_: Use Node.js v18 for best compatibility
+  - _Workaround_: Use Node.js v18 for best compatibility (specified in .node-version file)
 
 ## License
 
