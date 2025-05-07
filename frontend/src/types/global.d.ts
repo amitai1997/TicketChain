@@ -1,6 +1,6 @@
 // Global type declarations for the application
 
-// Window with ethereum provider 
+// Window with ethereum provider
 interface Window {
   ethereum: any;
   testContract?: () => Promise<any>;
