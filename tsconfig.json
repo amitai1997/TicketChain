@@ -20,6 +20,6 @@
     "noImplicitThis": true,
     "alwaysStrict": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "hardhat.config.ts", "scripts", "test", "typechain-types"],
   "exclude": ["node_modules"]
 }
