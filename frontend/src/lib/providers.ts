@@ -1,20 +1,6 @@
 import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { hardhat } from 'viem/chains';
 
-// Enhanced error logging
-const enhancedErrorHandler = (error: Error) => {
-  console.error('Blockchain Provider Error:', {
-    name: error.name,
-    message: error.message,
-    stack: error.stack,
-  });
-
-  // Additional custom error handling logic
-  if (error.message.includes('ENS')) {
-    console.warn('ENS resolution error detected. Continuing without resolution.');
-  }
-};
-
 // Create public client with detailed error handling
 export const publicClient = createPublicClient({
   chain: hardhat,

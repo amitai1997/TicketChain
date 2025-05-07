@@ -12,9 +12,9 @@ interface ImportMetaEnv {
 }
 
 // Add env to import.meta
-interface ImportMeta {
-  env: ImportMetaEnv;
-}
+// interface ImportMeta {
+//   env: ImportMetaEnv;
+// }
 
 export const setupDebugTools = () => {
   console.log('Setting up debug tools');
