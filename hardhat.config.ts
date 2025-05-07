@@ -1,9 +1,11 @@
 import { HardhatUserConfig } from 'hardhat/config';
-import '@nomicfoundation/hardhat-toolbox';
-import '@typechain/hardhat';
-import 'hardhat-gas-reporter';
-import 'hardhat-contract-sizer';
-import 'dotenv/config';
+
+// Import plugins
+require('@nomicfoundation/hardhat-toolbox');
+require('@typechain/hardhat');
+require('hardhat-gas-reporter');
+require('hardhat-contract-sizer');
+require('dotenv/config');
 
 // Determine if we're running in coverage mode
 const isCoverage = process.env.SOLIDITY_COVERAGE === 'true';
@@ -16,7 +18,7 @@ const config: HardhatUserConfig = {
       viaIR: !isCoverage,
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 200,
       },
       debug: {
         revertStrings: 'strip',
