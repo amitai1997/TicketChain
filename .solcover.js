@@ -3,10 +3,10 @@ module.exports = {
   istanbulReporter: ['html', 'lcov', 'text', 'json'],
   configureYulOptimizer: false,
   mocha: {
-    timeout: 100000
+    timeout: 100000,
   },
   // Disable solc optimizer
   solcOptimizerDetails: {
-    enabled: false
-  }
-}; 
+    enabled: false,
+  },
+};
