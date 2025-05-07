@@ -4,12 +4,7 @@
 
 import { ethers } from 'ethers';
 
-// Create custom Vite env interface
-interface ImportMetaEnv {
-  VITE_CONTRACT_ADDRESS: string;
-  VITE_RPC_URL: string;
-  VITE_ENVIRONMENT: string;
-}
+// Removed unused ImportMetaEnv interface
 
 // Add env to import.meta
 // interface ImportMeta {
