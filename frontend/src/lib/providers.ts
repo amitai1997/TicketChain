@@ -26,21 +26,12 @@ export const publicClient = createPublicClient({
     },
   },
   pollingInterval: 1000,
-  onError: enhancedErrorHandler,
 });
 
 // Create wallet client with MetaMask
 export const walletClient = createWalletClient({
   chain: hardhat,
   transport: window.ethereum ? custom(window.ethereum) : http('http://localhost:8545'),
-  batch: {
-    multicall: {
-      batchSize: 1024,
-      wait: 16,
-    },
-  },
-  pollingInterval: 1000,
-  onError: enhancedErrorHandler,
 });
 
 // Optional: Create a wrapper function to handle provider checks
@@ -56,3 +47,10 @@ export const getProvider = () => {
     return http('http://localhost:8545');
   }
 };
+
+// Add types for window.ethereum
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}

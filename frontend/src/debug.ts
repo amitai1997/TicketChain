@@ -2,6 +2,20 @@
 // This is a debugging utility that will be loaded via script tag
 // to help diagnose contract connection issues
 
+import { ethers } from 'ethers';
+
+// Create custom Vite env interface
+interface ImportMetaEnv {
+  VITE_CONTRACT_ADDRESS: string;
+  VITE_RPC_URL: string;
+  VITE_ENVIRONMENT: string;
+}
+
+// Add env to import.meta
+interface ImportMeta {
+  env: ImportMetaEnv;
+}
+
 export const setupDebugTools = () => {
   console.log('Setting up debug tools');
 
