@@ -49,7 +49,7 @@ jobs:
         run: |
           mkdir -p frontend/src/artifacts/contracts/TicketNFT.sol
           mkdir -p frontend/public/artifacts/contracts/TicketNFT.sol
-          
+
       - name: Install dependencies
         working-directory: ./frontend
         run: pnpm install --no-frozen-lockfile
