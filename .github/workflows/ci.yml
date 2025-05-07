@@ -127,8 +127,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run tests
+      - name: Run unit tests
         run: pnpm test
+
+      - name: Run integration tests
+        run: pnpm test:integration
 
   security:
     needs: setup
