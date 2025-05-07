@@ -8,17 +8,17 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Using account: ${deployer.address}`);
   console.log(`Network: ${network.name}`);
-  
+
   // Try to load deployment info
   const networkName = network.name;
   const deploymentInfo = loadDeploymentInfo(networkName);
-  
+
   if (!deploymentInfo || !deploymentInfo.contractAddress) {
     console.error(`No deployment found for network ${networkName}.`);
     console.error(`Please run 'pnpm deploy:dev' or 'pnpm deploy:local' first.`);
     process.exit(1);
   }
-  
+
   const contractAddress = deploymentInfo.contractAddress;
   console.log(`Found deployed contract at: ${contractAddress}`);
 
@@ -36,10 +36,10 @@ async function main() {
   // In ethers v6, we can get this by calling the function directly
   const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
   console.log(`MINTER_ROLE: ${MINTER_ROLE}`);
-  
+
   // Check if deployer already has minter role
   const hasRole = await ticketNFT.hasRole(MINTER_ROLE, deployer.address);
-  
+
   if (!hasRole) {
     // Grant the role to the deployer
     await ticketNFT.grantRole(MINTER_ROLE, deployer.address);
@@ -59,7 +59,7 @@ async function main() {
   // Generate a unique token ID to avoid conflicts with existing tokens
   const tokenId = Math.floor(Math.random() * 10000) + 1000;
   console.log(`Using token ID: ${tokenId}`);
-  
+
   const ticketMetadata = {
     eventId: tokenId, // Use tokenId as eventId for uniqueness
     price: ethers.parseEther('0.1'), // 0.1 ETH

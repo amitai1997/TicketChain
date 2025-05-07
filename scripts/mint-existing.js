@@ -34,14 +34,14 @@ async function main() {
 
   // Get the contract factory to get the ABI
   const TicketNFT = await ethers.getContractFactory('TicketNFT');
-  
+
   // Create instance by using the ethers.js v6 Contract constructor
   const ticketNFT = new ethers.Contract(
-    contractAddress,            // address
-    TicketNFT.interface,        // ABI
-    deployer                    // signer
+    contractAddress, // address
+    TicketNFT.interface, // ABI
+    deployer // signer
   );
-  
+
   console.log(`Connected to TicketNFT at ${contractAddress}`);
 
   // Generate a unique token ID to avoid conflicts
@@ -65,7 +65,7 @@ async function main() {
     // Get the MINTER_ROLE bytes32 value
     const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
     console.log(`MINTER_ROLE: ${MINTER_ROLE}`);
-    
+
     // Check if the deployer has the MINTER_ROLE
     const hasMinterRole = await ticketNFT.hasRole(MINTER_ROLE, deployer.address);
     console.log(`Deployer has MINTER_ROLE: ${hasMinterRole}`);
@@ -100,7 +100,7 @@ async function main() {
     console.log(`Valid From: ${new Date(Number(metadata.validFrom) * 1000).toLocaleString()}`);
     console.log(`Valid Until: ${new Date(Number(metadata.validUntil) * 1000).toLocaleString()}`);
     console.log(`Transferable: ${metadata.isTransferable}`);
-    
+
     // Additional information
     console.log('\nAdditional Ticket Information:');
     console.log('=============================');

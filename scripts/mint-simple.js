@@ -5,23 +5,23 @@ const { ethers, network } = require('hardhat');
 const { loadDeploymentInfo, getCurrentTimestamp } = require('./utils/helpers');
 
 // Hard-coded role values (avoids calling the contract for these values)
-const MINTER_ROLE = "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"; // keccak256("MINTER_ROLE")
+const MINTER_ROLE = '0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6'; // keccak256("MINTER_ROLE")
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Using account: ${deployer.address}`);
   console.log(`Network: ${network.name}`);
-  
+
   // Try to load deployment info
   const networkName = network.name;
   const deploymentInfo = loadDeploymentInfo(networkName);
-  
+
   if (!deploymentInfo || !deploymentInfo.contractAddress) {
     console.error(`No deployment found for network ${networkName}.`);
     console.error(`Please run 'pnpm deploy:dev' or 'pnpm deploy:local' first.`);
     process.exit(1);
   }
-  
+
   const contractAddress = deploymentInfo.contractAddress;
   console.log(`Found deployed contract at: ${contractAddress}`);
 
@@ -35,10 +35,10 @@ async function main() {
   // Step 2: Set up roles
   console.log('\n--- SETTING UP ROLES ---');
   console.log(`Using hard-coded MINTER_ROLE: ${MINTER_ROLE}`);
-  
+
   // Check if deployer already has minter role
   const hasRole = await ticketNFT.hasRole(MINTER_ROLE, deployer.address);
-  
+
   if (!hasRole) {
     // Grant the role to the deployer
     await ticketNFT.grantRole(MINTER_ROLE, deployer.address);
@@ -58,7 +58,7 @@ async function main() {
   // Generate a unique token ID to avoid conflicts with existing tokens
   const tokenId = Math.floor(Math.random() * 10000) + 1000;
   console.log(`Using token ID: ${tokenId}`);
-  
+
   const ticketMetadata = {
     eventId: tokenId, // Use tokenId as eventId for uniqueness
     price: ethers.parseEther('0.1'), // 0.1 ETH
@@ -70,7 +70,7 @@ async function main() {
   console.log(`\nMinting ticket #${tokenId}...`);
   const tx = await ticketNFT.mintTicket(deployer.address, tokenId, ticketMetadata);
   console.log(`Transaction hash: ${tx.hash}`);
-  
+
   console.log('Waiting for transaction confirmation...');
   const receipt = await tx.wait();
   console.log(`Successfully minted ticket #${tokenId} to ${deployer.address}`);
