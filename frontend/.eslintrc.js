@@ -16,12 +16,12 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true
-    }
+      jsx: true,
+    },
   },
   env: {
     browser: true,
     es2021: true,
-    node: true
-  }
+    node: true,
+  },
 };
