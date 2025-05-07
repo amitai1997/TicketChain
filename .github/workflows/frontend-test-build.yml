@@ -45,6 +45,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup build environment
+        run: |
+          mkdir -p frontend/src/artifacts/contracts/TicketNFT.sol
+          mkdir -p frontend/public/artifacts/contracts/TicketNFT.sol
+          
       - name: Install dependencies
         working-directory: ./frontend
         run: pnpm install --no-frozen-lockfile

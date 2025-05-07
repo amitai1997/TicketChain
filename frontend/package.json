@@ -7,7 +7,7 @@
     "dev": "vite --host --port 3000",
     "prebuild": "pnpm run copy-artifacts",
     "copy-artifacts": "mkdir -p public/artifacts/contracts/TicketNFT.sol && cp ../artifacts/contracts/TicketNFT.sol/TicketNFT.json public/artifacts/contracts/TicketNFT.sol/TicketNFT.json",
-    "build": "tsc && vite build",
+    "build": "tsc --project tsconfig.json && vite build",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest run",
