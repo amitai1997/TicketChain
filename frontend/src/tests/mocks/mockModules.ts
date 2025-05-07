@@ -32,8 +32,12 @@ vi.mock('wagmi', () => ({
 }));
 
 // Mock the artifacts
-vi.mock('../artifacts/contracts/TicketNFT.sol/TicketNFT.json', () => {
-  return {
-    default: TicketNFTMock,
-  };
-}, { virtual: true });
+vi.mock(
+  '../artifacts/contracts/TicketNFT.sol/TicketNFT.json',
+  () => {
+    return {
+      default: TicketNFTMock,
+    };
+  },
+  { virtual: true }
+);

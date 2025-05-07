@@ -1,5 +1,4 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
 
 // Mock App component that doesn't depend on contract artifacts
 const AppMock: React.FC = () => {
