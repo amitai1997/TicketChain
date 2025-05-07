@@ -9,6 +9,29 @@ import { useTicketNFT } from '@/hooks/useTicketNFT'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { toast } from 'sonner'
 
+// Helper function to format date for datetime-local input
+const formatDateForInput = (date) => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    // Return current date/time if the date is invalid
+    const now = new Date();
+    return now.toISOString().slice(0, 16);
+  }
+  return date.toISOString().slice(0, 16);
+};
+
+// Helper function to ensure a valid date
+const ensureValidDate = (dateValue) => {
+  if (!dateValue) return new Date();
+  
+  try {
+    const date = new Date(dateValue);
+    return isNaN(date.getTime()) ? new Date() : date;
+  } catch (e) {
+    console.error("Invalid date value:", e);
+    return new Date();
+  }
+};
+
 const MintTicket = () => {
   const navigate = useNavigate()
   const { isConnected, address } = useAccount()
@@ -16,7 +39,7 @@ const MintTicket = () => {
   const [isMinting, setIsMinting] = useState(false)
   const [hasMinterRole, setHasMinterRole] = useState(false)
 
-  // Form state
+  // Form state with validated dates
   const [formData, setFormData] = useState({
     eventId: '1',
     price: '0.01',
@@ -60,16 +83,24 @@ const MintTicket = () => {
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox'
-        ? (e.target as HTMLInputElement).checked
-        : type === 'date'
-          ? new Date(value)
-          : value
-    }))
-  }
+    
+    setFormData(prev => {
+      if (name === 'validFrom' || name === 'validUntil') {
+        try {
+          // Parse the date string from the input and create a valid Date object
+          return { ...prev, [name]: new Date(value) };
+        } catch (error) {
+          console.error(`Error parsing date for ${name}:`, error);
+          // Return the current value if there's an error
+          return prev;
+        }
+      } else if (type === 'checkbox') {
+        return { ...prev, [name]: (e.target as HTMLInputElement).checked };
+      } else {
+        return { ...prev, [name]: value };
+      }
+    });
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,12 +114,16 @@ const MintTicket = () => {
     try {
       setIsMinting(true)
 
+      // Ensure dates are valid before proceeding
+      const validFromDate = ensureValidDate(formData.validFrom);
+      const validUntilDate = ensureValidDate(formData.validUntil);
+
       // Calculate token ID based on total supply
       const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n
 
       // Convert dates to Unix timestamps
-      const validFrom = Math.floor(formData.validFrom.getTime() / 1000)
-      const validUntil = Math.floor(formData.validUntil.getTime() / 1000)
+      const validFrom = Math.floor(validFromDate.getTime() / 1000)
+      const validUntil = Math.floor(validUntilDate.getTime() / 1000)
 
       console.log('Minting ticket with params:', {
         address,
@@ -152,6 +187,10 @@ const MintTicket = () => {
       </div>
     )
   }
+
+  // Safely format dates for inputs, preventing errors
+  const validFromValue = formatDateForInput(formData.validFrom);
+  const validUntilValue = formatDateForInput(formData.validUntil);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -221,7 +260,7 @@ const MintTicket = () => {
                 name="validFrom"
                 type="datetime-local"
                 className="w-full p-2 border border-border rounded-md bg-background"
-                value={formData.validFrom.toISOString().slice(0, 16)}
+                value={validFromValue}
                 onChange={handleChange}
                 required
                 aria-label="Ticket valid from date"
@@ -239,7 +278,7 @@ const MintTicket = () => {
                 name="validUntil"
                 type="datetime-local"
                 className="w-full p-2 border border-border rounded-md bg-background"
-                value={formData.validUntil.toISOString().slice(0, 16)}
+                value={validUntilValue}
                 onChange={handleChange}
                 required
                 aria-label="Ticket valid until date"
