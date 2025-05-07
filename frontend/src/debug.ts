@@ -4,13 +4,6 @@
 
 import { ethers } from 'ethers';
 
-// Removed unused ImportMetaEnv interface
-
-// Add env to import.meta
-// interface ImportMeta {
-//   env: ImportMetaEnv;
-// }
-
 export const setupDebugTools = () => {
   console.log('Setting up debug tools');
 
@@ -157,13 +150,3 @@ export const setupDebugTools = () => {
   console.log('Debug tools ready! Call window.testContract() to test contract connection');
   console.log('Environment info:', window.getDebugInfo());
 };
-
-// Add types to window
-declare global {
-  interface Window {
-    ethereum: any;
-    testContract: () => Promise<any>;
-    getDebugInfo: () => any;
-    fetch: typeof fetch;
-  }
-}
