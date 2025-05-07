@@ -46,11 +46,9 @@ describe('TicketNFT Trading Integration', () => {
     expect(await ticketNFT.ownerOf(1)).to.equal(buyer.address);
 
     // 2. Transfer the ticket to a second buyer
-    await ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](
-      buyer.address, 
-      secondBuyer.address, 
-      1
-    );
+    await ticketNFT
+      .connect(buyer)
+      ['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, 1);
 
     // Verify the new ownership
     expect(await ticketNFT.ownerOf(1)).to.equal(secondBuyer.address);
@@ -100,20 +98,20 @@ describe('TicketNFT Trading Integration', () => {
     // Try to transfer a non-transferable ticket (should fail)
     const nonTransferableTicketId = 1; // First ticket is non-transferable
     await expect(
-      ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](
-        buyer.address, 
-        secondBuyer.address, 
-        nonTransferableTicketId
-      )
+      ticketNFT
+        .connect(buyer)
+        [
+          'safeTransferFrom(address,address,uint256)'
+        ](buyer.address, secondBuyer.address, nonTransferableTicketId)
     ).to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
 
     // Transfer a transferable ticket (should succeed)
     const transferableTicketId = 2; // Second ticket is transferable
-    await ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](
-      buyer.address, 
-      secondBuyer.address, 
-      transferableTicketId
-    );
+    await ticketNFT
+      .connect(buyer)
+      [
+        'safeTransferFrom(address,address,uint256)'
+      ](buyer.address, secondBuyer.address, transferableTicketId);
 
     // Verify the ownership changed
     expect(await ticketNFT.ownerOf(transferableTicketId)).to.equal(secondBuyer.address);

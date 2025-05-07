@@ -5,6 +5,8 @@ import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('TicketNFT Lifecycle', () => {
   let ticketNFT: TicketNFT;
+  // Owner is used for contract deployment
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let owner: HardhatEthersSigner;
   let minter: HardhatEthersSigner;
   let buyer: HardhatEthersSigner;
@@ -23,12 +25,15 @@ describe('TicketNFT Lifecycle', () => {
   });
 
   it('should create ticket with correct metadata', async () => {
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp
+    const latestBlock = await hardhat.ethers.provider.getBlock('latest');
+    const blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
+
     const ticketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600), // 1 hour from now
-      validUntil: BigInt(currentTime + 7200), // 2 hours from now
+      validFrom: blockchainTime + BigInt(3600), // 1 hour from blockchain time
+      validUntil: blockchainTime + BigInt(7200), // 2 hours from blockchain time
       isTransferable: true,
     };
 
@@ -43,12 +48,19 @@ describe('TicketNFT Lifecycle', () => {
   });
 
   it('should check ticket validity', async () => {
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp from the blockchain
+    const latestBlock = await hardhat.ethers.provider.getBlock('latest');
+    const blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
+
+    // Use blockchain time as the base for our ticket timing
+    const validFrom = blockchainTime + BigInt(3600); // 1 hour from current blockchain time
+    const validUntil = blockchainTime + BigInt(7200); // 2 hours from current blockchain time
+
     const ticketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600), // 1 hour from now
-      validUntil: BigInt(currentTime + 7200), // 2 hours from now
+      validFrom,
+      validUntil,
       isTransferable: true,
     };
 
@@ -58,8 +70,9 @@ describe('TicketNFT Lifecycle', () => {
     const initialValidity = await ticketNFT.isTicketValid(1);
     expect(initialValidity).to.be.false;
 
-    // Simulate time passing by setting block timestamp
-    await hardhat.ethers.provider.send('evm_setNextBlockTimestamp', [currentTime + 5000]);
+    // Simulate time passing by setting block timestamp to a point between validFrom and validUntil
+    const newTimestamp = Number(validFrom) + 100; // Just after validFrom
+    await hardhat.ethers.provider.send('evm_setNextBlockTimestamp', [newTimestamp]);
     await hardhat.ethers.provider.send('evm_mine');
 
     // Check ticket validity after time has passed
@@ -68,32 +81,40 @@ describe('TicketNFT Lifecycle', () => {
   });
 
   it('should prevent non-transferable ticket transfers', async () => {
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp
+    const latestBlock = await hardhat.ethers.provider.getBlock('latest');
+    const blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
+
     const nonTransferableTicketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600),
-      validUntil: BigInt(currentTime + 7200),
+      validFrom: blockchainTime + BigInt(3600),
+      validUntil: blockchainTime + BigInt(7200),
       isTransferable: false,
     };
 
     await ticketNFT.connect(minter).mintTicket(buyer.address, 1, nonTransferableTicketMetadata);
 
+    // Try to transfer a non-transferable ticket
     const newOwner = (await hardhat.ethers.getSigners())[3];
+    const transferMethod = 'safeTransferFrom(address,address,uint256)';
     await expect(
       ticketNFT
         .connect(buyer)
-        ['safeTransferFrom(address,address,uint256)'](buyer.address, newOwner.address, 1)
+        [transferMethod](buyer.address, newOwner.address, 1)
     ).to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
   });
 
   it('should prevent minting tickets with invalid time range', async () => {
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp
+    const latestBlock = await hardhat.ethers.provider.getBlock('latest');
+    const blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
+
     const invalidTicketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 7200), // Start time after end time
-      validUntil: BigInt(currentTime + 3600),
+      validFrom: blockchainTime + BigInt(7200), // Start time after end time
+      validUntil: blockchainTime + BigInt(3600),
       isTransferable: true,
     };
 
@@ -103,12 +124,15 @@ describe('TicketNFT Lifecycle', () => {
   });
 
   it('should allow ticket burning by owner', async () => {
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp
+    const latestBlock = await hardhat.ethers.provider.getBlock('latest');
+    const blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
+
     const ticketMetadata = {
       eventId: 1,
       price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600),
-      validUntil: BigInt(currentTime + 7200),
+      validFrom: blockchainTime + BigInt(3600),
+      validUntil: blockchainTime + BigInt(7200),
       isTransferable: true,
     };
 
