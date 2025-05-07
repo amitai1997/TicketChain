@@ -47,16 +47,16 @@ graph TD
     D -->|Transfer/Sell| E[Secondary Market]
     E -->|Buy| F[New Ticket Holder]
     F -->|Redeem| G[Event Entry]
-    
+
     subgraph Blockchain
     B
     end
-    
+
     subgraph TicketChain System
     C
     E
     end
-    
+
     B -->|Verify| G
 ```
 
@@ -126,23 +126,23 @@ TicketChain supports multiple Ethereum networks. Default configuration is in `ha
 // File: hardhat.config.js
 module.exports = {
   solidity: {
-    version: "0.8.20",
+    version: '0.8.20',
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
   networks: {
     // Local development
     hardhat: {
-      chainId: 31337
+      chainId: 1337,
     },
     // Local node
     localhost: {
-      url: "http://127.0.0.1:8545",
-      chainId: 31337
+      url: 'http://127.0.0.1:8545',
+      chainId: 1337,
     },
     // Sepolia testnet
     sepolia: {
@@ -150,10 +150,10 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       chainId: 11155111,
       gas: 2100000,
-      gasPrice: 8000000000 // 8 gwei
-    }
-  }
-}
+      gasPrice: 8000000000, // 8 gwei
+    },
+  },
+};
 ```
 
 ### Contract Compilation
@@ -190,12 +190,10 @@ npx hardhat run scripts/mint-tickets.js --network localhost
 ```js
 // File: scripts/transfer-ticket.js
 const ticketId = 1;
-const recipientAddress = "0xRecipientAddressHere";
-const tx = await ticketNFT.connect(ticketOwner)["safeTransferFrom(address,address,uint256)"](
-  ticketOwner.address,
-  recipientAddress,
-  ticketId
-);
+const recipientAddress = '0xRecipientAddressHere';
+const tx = await ticketNFT
+  .connect(ticketOwner)
+  ['safeTransferFrom(address,address,uint256)'](ticketOwner.address, recipientAddress, ticketId);
 await tx.wait();
 ```
 
@@ -270,14 +268,14 @@ jobs:
 
 ## Configuration Reference
 
-| Parameter | Default | Description | Where to Set |
-|-----------|---------|-------------|-------------|
-| `MINTER_ROLE` | Owner | Controls who can create new tickets | Contract, grantRole function |
-| `PAUSER_ROLE` | Owner | Controls who can pause/unpause the contract | Contract, grantRole function |
-| `Gas Limit` | 2,100,000 | Maximum computational effort for transactions | hardhat.config.js |
-| `Gas Price` | 8 gwei | Price per unit of gas (network-specific) | hardhat.config.js |
-| `Optimizer Runs` | 200 | Contract optimization level | hardhat.config.js |
-| `Network Chain ID` | 31337 (localhost) | Blockchain network identifier | hardhat.config.js |
+| Parameter          | Default          | Description                                   | Where to Set                 |
+| ------------------ | ---------------- | --------------------------------------------- | ---------------------------- |
+| `MINTER_ROLE`      | Owner            | Controls who can create new tickets           | Contract, grantRole function |
+| `PAUSER_ROLE`      | Owner            | Controls who can pause/unpause the contract   | Contract, grantRole function |
+| `Gas Limit`        | 2,100,000        | Maximum computational effort for transactions | hardhat.config.js            |
+| `Gas Price`        | 8 gwei           | Price per unit of gas (network-specific)      | hardhat.config.js            |
+| `Optimizer Runs`   | 200              | Contract optimization level                   | hardhat.config.js            |
+| `Network Chain ID` | 1337 (localhost) | Blockchain network identifier                 | hardhat.config.js            |
 
 ## Contributing Guide
 
@@ -319,13 +317,13 @@ We welcome contributions from the community! Follow these steps to contribute:
 ## Known Issues / Limitations
 
 - **Gas Costs**: High gas prices on Ethereum mainnet can make individual ticket minting expensive
-  - *Workaround*: Use batched minting or consider L2 solutions
+  - _Workaround_: Use batched minting or consider L2 solutions
 - **Block Confirmation Times**: Event entry might require waiting for transaction confirmations
-  - *Workaround*: Use state channels or implement a centralized verification layer
+  - _Workaround_: Use state channels or implement a centralized verification layer
 - **MetaMask Required**: Requires users to have MetaMask or similar wallet
-  - *Workaround*: Implement custodial solution for mainstream adoption
+  - _Workaround_: Implement custodial solution for mainstream adoption
 - **Ethereum Node.js v23 Compatibility**: Some warnings appear with newer Node.js versions
-  - *Workaround*: Use Node.js v18 for best compatibility
+  - _Workaround_: Use Node.js v18 for best compatibility
 
 ## License
 

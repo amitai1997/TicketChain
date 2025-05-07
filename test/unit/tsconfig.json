@@ -9,7 +9,5 @@
     "types": ["node", "mocha", "chai"],
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": [
-    "**/*.test.ts"
-  ]
+  "include": ["**/*.test.ts"]
 }

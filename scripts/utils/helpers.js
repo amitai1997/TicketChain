@@ -10,19 +10,16 @@ const path = require('path');
  */
 function saveDeploymentInfo(networkName, deploymentInfo) {
   const deploymentDir = path.join(__dirname, '../../deployments');
-  
+
   // Create deployments directory if it doesn't exist
   if (!fs.existsSync(deploymentDir)) {
     fs.mkdirSync(deploymentDir, { recursive: true });
   }
-  
+
   // Save deployment info
   const filePath = path.join(deploymentDir, `${networkName}-deployment.json`);
-  fs.writeFileSync(
-    filePath,
-    JSON.stringify(deploymentInfo, null, 2)
-  );
-  
+  fs.writeFileSync(filePath, JSON.stringify(deploymentInfo, null, 2));
+
   console.log(`Deployment info saved to ${filePath}`);
 }
 
@@ -33,7 +30,7 @@ function saveDeploymentInfo(networkName, deploymentInfo) {
  */
 function loadDeploymentInfo(networkName) {
   const filePath = path.join(__dirname, '../../deployments', `${networkName}-deployment.json`);
-  
+
   try {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
@@ -52,10 +49,10 @@ async function logGasUsage(tx, label) {
   const receipt = await tx.wait();
   const gasUsed = receipt.gasUsed.toString();
   const txHash = receipt.hash;
-  
+
   console.log(`Gas used for ${label}: ${gasUsed} units`);
   console.log(`Transaction hash: ${txHash}`);
-  
+
   return receipt;
 }
 
@@ -72,5 +69,5 @@ module.exports = {
   saveDeploymentInfo,
   loadDeploymentInfo,
   logGasUsage,
-  getCurrentTimestamp
+  getCurrentTimestamp,
 };

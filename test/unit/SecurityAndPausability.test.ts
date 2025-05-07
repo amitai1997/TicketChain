@@ -1,7 +1,7 @@
-import hardhat from "hardhat";
-import { expect } from "chai";
-import { TicketNFT } from "../../types/typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import hardhat from 'hardhat';
+import { expect } from 'chai';
+import { TicketNFT } from '../../types/typechain-types';
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('TicketNFT Security and Pausability', () => {
   let ticketNFT: TicketNFT;
@@ -32,12 +32,12 @@ describe('TicketNFT Security and Pausability', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await expect(
       ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
-    ).to.be.revertedWithCustomError(ticketNFT, 'ContractPaused');
+    ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 
   it('should unpause contract and allow minting', async () => {
@@ -49,25 +49,26 @@ describe('TicketNFT Security and Pausability', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
-    await expect(
-      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
-    ).to.not.be.reverted;
+    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)).to.not.be
+      .reverted;
   });
 
   it('should prevent non-pauser from pausing', async () => {
-    await expect(
-      ticketNFT.connect(attacker).pause()
-    ).to.be.revertedWithCustomError(ticketNFT, 'AccessControlUnauthorizedAccount');
+    await expect(ticketNFT.connect(attacker).pause()).to.be.revertedWithCustomError(
+      ticketNFT,
+      'PauserRoleRequired'
+    );
   });
 
   it('should prevent non-pauser from unpausing', async () => {
     await ticketNFT.pause();
-    await expect(
-      ticketNFT.connect(attacker).unpause()
-    ).to.be.revertedWithCustomError(ticketNFT, 'AccessControlUnauthorizedAccount');
+    await expect(ticketNFT.connect(attacker).unpause()).to.be.revertedWithCustomError(
+      ticketNFT,
+      'PauserRoleRequired'
+    );
   });
 
   it('should prevent token transfer when paused', async () => {
@@ -76,7 +77,7 @@ describe('TicketNFT Security and Pausability', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata);
@@ -84,7 +85,9 @@ describe('TicketNFT Security and Pausability', () => {
 
     const newOwner = (await hardhat.ethers.getSigners())[3];
     await expect(
-      ticketNFT.connect(minter)['safeTransferFrom(address,address,uint256)'](minter.address, newOwner.address, 1)
-    ).to.be.revertedWithCustomError(ticketNFT, 'ContractPaused');
+      ticketNFT
+        .connect(minter)
+        ['safeTransferFrom(address,address,uint256)'](minter.address, newOwner.address, 1)
+    ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 });

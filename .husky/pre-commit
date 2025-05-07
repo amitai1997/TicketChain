@@ -1,6 +1,7 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Run linters and tests before committing
+# Run linters before committing
 npx solhint 'contracts/**/*.sol'
-npm run test:coverage
+# Run test coverage with optimized settings
+npm run test:coverage:fix

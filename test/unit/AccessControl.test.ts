@@ -1,7 +1,7 @@
-import hardhat from "hardhat";
-import { expect } from "chai";
-import { TicketNFT } from "../../types/typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import hardhat from 'hardhat';
+import { expect } from 'chai';
+import { TicketNFT } from '../../types/typechain-types';
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('TicketNFT Access Control', () => {
   let ticketNFT: TicketNFT;
@@ -25,7 +25,7 @@ describe('TicketNFT Access Control', () => {
   it('should have correct initial roles', async () => {
     const DEFAULT_ADMIN_ROLE = await ticketNFT.DEFAULT_ADMIN_ROLE();
     const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
-    
+
     expect(await ticketNFT.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.true;
     expect(await ticketNFT.hasRole(MINTER_ROLE, owner.address)).to.be.true;
     expect(await ticketNFT.hasRole(MINTER_ROLE, minter.address)).to.be.true;
@@ -34,7 +34,7 @@ describe('TicketNFT Access Control', () => {
   it('should allow admin to grant minter role', async () => {
     const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
     await ticketNFT.grantRole(MINTER_ROLE, nonMinter.address);
-    
+
     expect(await ticketNFT.hasRole(MINTER_ROLE, nonMinter.address)).to.be.true;
   });
 
@@ -44,12 +44,12 @@ describe('TicketNFT Access Control', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
     await expect(
       ticketNFT.connect(nonMinter).mintTicket(nonMinter.address, 1, ticketMetadata)
-    ).to.be.revertedWithCustomError(ticketNFT, 'AccessControlUnauthorizedAccount');
+    ).to.be.revertedWithCustomError(ticketNFT, 'MinterRoleRequired');
   });
 
   it('should allow minters to mint tickets', async () => {
@@ -58,17 +58,16 @@ describe('TicketNFT Access Control', () => {
       price: hardhat.ethers.parseEther('0.1'),
       validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
       validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true
+      isTransferable: true,
     };
 
-    await expect(
-      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
-    ).to.not.be.reverted;
+    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)).to.not.be
+      .reverted;
   });
 
   it('should prevent revoking admin role for owner', async () => {
     const DEFAULT_ADMIN_ROLE = await ticketNFT.DEFAULT_ADMIN_ROLE();
-    
+
     await expect(
       ticketNFT.renounceRole(DEFAULT_ADMIN_ROLE, owner.address)
     ).to.be.revertedWithCustomError(ticketNFT, 'CannotRenounceAdminRole');

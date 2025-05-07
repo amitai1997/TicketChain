@@ -21,8 +21,8 @@ export const useWalletConnection = (): WalletConnection => {
       }
 
       // Request account access
-      const accounts = await (window as any).ethereum.request({ 
-        method: 'eth_requestAccounts' 
+      const accounts = await (window as any).ethereum.request({
+        method: 'eth_requestAccounts',
       });
 
       // Set the first account
@@ -65,13 +65,13 @@ export const useWalletConnection = (): WalletConnection => {
   useEffect(() => {
     const checkConnection = async () => {
       if ((window as any).ethereum) {
-        const accounts = await (window as any).ethereum.request({ 
-          method: 'eth_accounts' 
+        const accounts = await (window as any).ethereum.request({
+          method: 'eth_accounts',
         });
-        
+
         if (accounts.length > 0) {
           setAccount(accounts[0]);
-          
+
           const provider = new ethers.providers.Web3Provider((window as any).ethereum);
           const balance = await provider.getBalance(accounts[0]);
           setBalance(ethers.utils.formatEther(balance));
@@ -87,6 +87,6 @@ export const useWalletConnection = (): WalletConnection => {
     isConnected: !!account,
     connect,
     disconnect,
-    balance
+    balance,
   };
 };

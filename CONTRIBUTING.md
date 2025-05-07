@@ -115,6 +115,7 @@ Example: `feat(contracts): implement ticket transferability toggle`
 ## Code Style and Security
 
 We use:
+
 - Solhint for Solidity linting (with security plugin)
 - ESLint for JavaScript/TypeScript linting
 - Prettier for code formatting

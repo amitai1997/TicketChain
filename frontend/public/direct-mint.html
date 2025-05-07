@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direct Ticket Minting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #3498db;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .card {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    #logs {
+      margin-top: 20px;
+      height: 300px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Direct Ticket Minting Tool</h1>
+  
+  <p>This page lets you mint tickets directly, bypassing the React components. It uses pure ethers.js to interact with the contract.</p>
+  
+  <div class="card">
+    <h2>Contract Info</h2>
+    <div>
+      <strong>Contract Address:</strong> <span id="contractAddress">0x5FbDB2315678afecb367f032d93F642f64180aa3</span>
+    </div>
+    <div>
+      <strong>Connected Account:</strong> <span id="connectedAccount">Not connected</span>
+    </div>
+    <div>
+      <strong>Has MINTER_ROLE:</strong> <span id="hasMinterRole">Unknown</span>
+    </div>
+    <div>
+      <button id="connectBtn">Connect Wallet</button>
+      <button id="checkRoleBtn" style="display:none;">Check Role</button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Mint a Ticket</h2>
+    <div>
+      <label for="tokenId">Token ID:</label>
+      <input type="number" id="tokenId" value="1" min="1" step="1">
+    </div>
+    <div>
+      <label for="eventId">Event ID:</label>
+      <input type="number" id="eventId" value="1" min="1" step="1">
+    </div>
+    <div>
+      <label for="price">Price (ETH):</label>
+      <input type="number" id="price" value="0.01" min="0" step="0.01">
+    </div>
+    <div>
+      <label for="validFrom">Valid From:</label>
+      <input type="datetime-local" id="validFrom">
+    </div>
+    <div>
+      <label for="validUntil">Valid Until:</label>
+      <input type="datetime-local" id="validUntil">
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="isTransferable" checked>
+        Is Transferable
+      </label>
+    </div>
+    <div style="margin-top: 15px;">
+      <button id="mintBtn" disabled>Mint Ticket</button>
+      <span id="mintStatus"></span>
+    </div>
+  </div>
+  
+  <div id="logs">
+    <div>Logs will appear here...</div>
+  </div>
+  
+  <!-- Load ethers.js from CDN -->
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+  
+  <script>
+    // Contract ABI - Only the function we need
+    const contractABI = [
+      // Constructor
+      "constructor()",
+      // ERC721
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function balanceOf(address) view returns (uint256)",
+      "function ownerOf(uint256) view returns (address)",
+      // AccessControl
+      "function hasRole(bytes32 role, address account) view returns (bool)",
+      "function grantRole(bytes32 role, address account)",
+      "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
+      "function MINTER_ROLE() view returns (bytes32)",
+      // Contract-specific
+      "function mintTicket(address to, uint256 tokenId, tuple(uint256 eventId, uint256 price, uint256 validFrom, uint256 validUntil, bool isTransferable) metadata) public",
+      "function getTicketMetadata(uint256 tokenId) view returns (tuple(uint256 eventId, uint256 price, uint256 validFrom, uint256 validUntil, bool isTransferable))",
+      "function totalSupply() view returns (uint256)"
+    ];
+    
+    // Contract address
+    const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    
+    // Globals
+    let provider;
+    let signer;
+    let contract;
+    let userAddress;
+    
+    // DOM elements
+    const connectBtn = document.getElementById('connectBtn');
+    const checkRoleBtn = document.getElementById('checkRoleBtn');
+    const mintBtn = document.getElementById('mintBtn');
+    const connectedAccount = document.getElementById('connectedAccount');
+    const hasMinterRole = document.getElementById('hasMinterRole');
+    const mintStatus = document.getElementById('mintStatus');
+    const logsDiv = document.getElementById('logs');
+    
+    // Initialize date inputs to sensible defaults
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 3600000);
+    const twoHoursLater = new Date(now.getTime() + 7200000);
+    
+    document.getElementById('validFrom').value = oneHourLater.toISOString().slice(0, 16);
+    document.getElementById('validUntil').value = twoHoursLater.toISOString().slice(0, 16);
+    
+    // Logging function
+    function log(message, isError = false) {
+      const logEntry = document.createElement('div');
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      if (isError) {
+        logEntry.className = 'error';
+      }
+      logsDiv.appendChild(logEntry);
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+      console.log(message);
+    }
+    
+    // Connect to wallet
+    async function connectWallet() {
+      try {
+        log('Connecting to wallet...');
+        
+        if (!window.ethereum) {
+          throw new Error('No Ethereum provider found. Please install MetaMask.');
+        }
+        
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        
+        log(`Connected to wallet: ${userAddress}`);
+        connectedAccount.textContent = userAddress;
+        
+        // Create contract instance
+        contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+        log(`Connected to contract at ${CONTRACT_ADDRESS}`);
+        
+        // Enable check role button
+        checkRoleBtn.style.display = 'inline-block';
+        connectBtn.textContent = 'Connected';
+        connectBtn.disabled = true;
+        
+        // Check role automatically
+        checkRole();
+      } catch (error) {
+        log(`Error connecting: ${error.message}`, true);
+      }
+    }
+    
+    // Check if user has MINTER_ROLE
+    async function checkRole() {
+      try {
+        log('Checking if account has MINTER_ROLE...');
+        
+        const MINTER_ROLE = await contract.MINTER_ROLE();
+        log(`MINTER_ROLE hash: ${MINTER_ROLE}`);
+        
+        const hasRole = await contract.hasRole(MINTER_ROLE, userAddress);
+        log(`Account has MINTER_ROLE: ${hasRole}`);
+        
+        hasMinterRole.textContent = hasRole ? 'Yes' : 'No';
+        hasMinterRole.className = hasRole ? 'success' : 'error';
+        
+        if (!hasRole) {
+          log('Attempting to grant MINTER_ROLE...');
+          
+          const DEFAULT_ADMIN_ROLE = await contract.DEFAULT_ADMIN_ROLE();
+          const isAdmin = await contract.hasRole(DEFAULT_ADMIN_ROLE, userAddress);
+          log(`Account has DEFAULT_ADMIN_ROLE: ${isAdmin}`);
+          
+          if (isAdmin) {
+            const tx = await contract.grantRole(MINTER_ROLE, userAddress);
+            log(`Transaction sent: ${tx.hash}`);
+            
+            await tx.wait();
+            log('MINTER_ROLE granted successfully!');
+            
+            // Check again
+            const newHasRole = await contract.hasRole(MINTER_ROLE, userAddress);
+            hasMinterRole.textContent = newHasRole ? 'Yes' : 'No';
+            hasMinterRole.className = newHasRole ? 'success' : 'error';
+            
+            // Enable mint button
+            mintBtn.disabled = false;
+          } else {
+            log('Account is not an admin. Cannot mint tickets.', true);
+          }
+        } else {
+          // Enable mint button
+          mintBtn.disabled = false;
+        }
+      } catch (error) {
+        log(`Error checking role: ${error.message}`, true);
+      }
+    }
+    
+    // Mint a ticket
+    async function mintTicket() {
+      try {
+        log('Preparing to mint a ticket...');
+        mintStatus.textContent = '';
+        
+        // Get form values
+        const tokenId = parseInt(document.getElementById('tokenId').value);
+        const eventId = parseInt(document.getElementById('eventId').value);
+        const price = document.getElementById('price').value;
+        
+        const validFromDate = new Date(document.getElementById('validFrom').value);
+        const validUntilDate = new Date(document.getElementById('validUntil').value);
+        
+        const validFrom = Math.floor(validFromDate.getTime() / 1000);
+        const validUntil = Math.floor(validUntilDate.getTime() / 1000);
+        
+        const isTransferable = document.getElementById('isTransferable').checked;
+        
+        log('Ticket parameters:', false);
+        log(`- Token ID: ${tokenId}`, false);
+        log(`- Event ID: ${eventId}`, false);
+        log(`- Price: ${price} ETH`, false);
+        log(`- Valid From: ${validFromDate.toLocaleString()}`, false);
+        log(`- Valid Until: ${validUntilDate.toLocaleString()}`, false);
+        log(`- Is Transferable: ${isTransferable}`, false);
+        
+        // Check if validFrom is before validUntil
+        if (validFrom >= validUntil) {
+          throw new Error('Valid From must be earlier than Valid Until.');
+        }
+        
+        // Convert price to Wei
+        const priceInWei = ethers.utils.parseEther(price);
+        
+        // Try different approaches
+        try {
+          log('Method 1: Using struct directly...');
+          mintStatus.textContent = 'Minting... (Method 1)';
+          
+          // Create metadata object
+          const metadata = {
+            eventId: eventId,
+            price: priceInWei,
+            validFrom: validFrom,
+            validUntil: validUntil,
+            isTransferable: isTransferable
+          };
+          
+          // Call mintTicket function
+          const tx = await contract.mintTicket(userAddress, tokenId, metadata, {
+            gasLimit: ethers.utils.hexlify(5000000) // High gas limit
+          });
+          
+          log(`Transaction sent: ${tx.hash}`);
+          mintStatus.textContent = 'Transaction sent...';
+          
+          // Wait for confirmation
+          const receipt = await tx.wait();
+          log(`Transaction confirmed: ${receipt.transactionHash}`);
+          
+          // Success message
+          mintStatus.textContent = 'Ticket minted successfully!';
+          mintStatus.className = 'success';
+          return;
+        } catch (error) {
+          log(`Method 1 failed: ${error.message}`, true);
+          log('Trying alternative method...', false);
+        }
+        
+        try {
+          log('Method 2: Using array for struct...');
+          mintStatus.textContent = 'Minting... (Method 2)';
+          
+          // Create metadata as array
+          const metadataArray = [
+            eventId,
+            priceInWei,
+            validFrom,
+            validUntil,
+            isTransferable
+          ];
+          
+          // Call mintTicket function
+          const tx = await contract.mintTicket(userAddress, tokenId, metadataArray, {
+            gasLimit: ethers.utils.hexlify(5000000) // High gas limit
+          });
+          
+          log(`Transaction sent: ${tx.hash}`);
+          mintStatus.textContent = 'Transaction sent...';
+          
+          // Wait for confirmation
+          const receipt = await tx.wait();
+          log(`Transaction confirmed: ${receipt.transactionHash}`);
+          
+          // Success message
+          mintStatus.textContent = 'Ticket minted successfully!';
+          mintStatus.className = 'success';
+          return;
+        } catch (error) {
+          log(`Method 2 failed: ${error.message}`, true);
+          log('Trying manual ABI encoding...', false);
+        }
+        
+        try {
+          log('Method 3: Manual ABI encoding...');
+          mintStatus.textContent = 'Minting... (Method 3)';
+          
+          // Get function signature for mintTicket
+          const functionSignature = "mintTicket(address,uint256,(uint256,uint256,uint256,uint256,bool))";
+          const functionSelector = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(functionSignature)).slice(0, 10);
+          
+          // Encode parameters
+          const abiCoder = new ethers.utils.AbiCoder();
+          const encodedParams = abiCoder.encode(
+            ["address", "uint256", "tuple(uint256,uint256,uint256,uint256,bool)"],
+            [
+              userAddress,
+              tokenId,
+              [
+                eventId,
+                priceInWei,
+                validFrom,
+                validUntil,
+                isTransferable
+              ]
+            ]
+          );
+          
+          // Combine function selector and parameters
+          const data = functionSelector + encodedParams.slice(2); // remove '0x' from encodedParams
+          
+          // Create transaction
+          const tx = await signer.sendTransaction({
+            to: CONTRACT_ADDRESS,
+            data: data,
+            gasLimit: ethers.utils.hexlify(5000000)
+          });
+          
+          log(`Transaction sent: ${tx.hash}`);
+          mintStatus.textContent = 'Transaction sent...';
+          
+          // Wait for confirmation
+          const receipt = await tx.wait();
+          log(`Transaction confirmed: ${receipt.transactionHash}`);
+          
+          // Success message
+          mintStatus.textContent = 'Ticket minted successfully!';
+          mintStatus.className = 'success';
+        } catch (error) {
+          log(`Method 3 failed: ${error.message}`, true);
+          mintStatus.textContent = 'Minting failed!';
+          mintStatus.className = 'error';
+          throw new Error('All minting methods failed');
+        }
+      } catch (error) {
+        log(`Error minting ticket: ${error.message}`, true);
+        mintStatus.textContent = `Error: ${error.message}`;
+        mintStatus.className = 'error';
+      }
+    }
+    
+    // Event listeners
+    connectBtn.addEventListener('click', connectWallet);
+    checkRoleBtn.addEventListener('click', checkRole);
+    mintBtn.addEventListener('click', mintTicket);
+    
+    // Initialize
+    log('Page initialized. Click "Connect Wallet" to begin.');
+  </script>
+</body>
+</html>
