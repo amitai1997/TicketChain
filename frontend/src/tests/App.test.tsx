@@ -26,7 +26,7 @@ describe('App', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/TicketChain/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/TicketChain/i);
   });
 
   it('renders footer', () => {
