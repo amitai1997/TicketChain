@@ -14,7 +14,7 @@ const formatDateForDisplay = (date) => {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return 'Select a date and time';
   }
-  
+
   // Format the date in a readable format
   return date.toLocaleString('en-US', {
     weekday: 'short',
@@ -43,14 +43,14 @@ const formatDateToLocalISO = (date) => {
   const day = date.getDate().toString().padStart(2, '0');
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  
+
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 // Helper function to ensure a valid date
 const ensureValidDate = (dateValue) => {
   if (!dateValue) return new Date();
-  
+
   try {
     const date = new Date(dateValue);
     return isNaN(date.getTime()) ? new Date() : date;
@@ -65,7 +65,7 @@ const formatTimeForInput = (date) => {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return '00:00';
   }
-  
+
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
@@ -77,11 +77,11 @@ const parseLocalDateTimeString = (dateTimeString) => {
   const [datePart, timePart] = dateTimeString.split('T');
   const [year, month, day] = datePart.split('-').map(Number);
   let hours = 0, minutes = 0;
-  
+
   if (timePart) {
     [hours, minutes] = timePart.split(':').map(Number);
   }
-  
+
   // Create a date in local time zone
   const localDate = new Date();
   localDate.setFullYear(year);
@@ -91,12 +91,12 @@ const parseLocalDateTimeString = (dateTimeString) => {
   localDate.setMinutes(minutes);
   localDate.setSeconds(0);
   localDate.setMilliseconds(0);
-  
+
   return localDate;
 };
 
 // Component for date/time picker
-const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = false, min, max }) => {
+const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = false, min = undefined, max = undefined }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date(value));
   const [selectedDate, setSelectedDate] = useState(value);
@@ -145,15 +145,15 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
   const handleTimeChange = (e) => {
     const timeValue = e.target.value;
     setSelectedTime(timeValue);
-    
+
     // Update the full date with the new time
     const newDate = new Date(selectedDate);
     const [hours, minutes] = timeValue.split(':').map(part => parseInt(part, 10));
-    
+
     if (!isNaN(hours) && !isNaN(minutes)) {
       newDate.setHours(hours);
       newDate.setMinutes(minutes);
-      
+
       // Create a synthetic event
       const synthEvent = {
         target: {
@@ -162,7 +162,7 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
           type: 'datetime-local'
         }
       };
-      
+
       onChange(synthEvent);
     }
   };
@@ -172,7 +172,7 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
     // Create a new date preserving the original time
     const newDate = new Date(date);
     const [hours, minutes] = selectedTime.split(':').map(part => parseInt(part, 10));
-    
+
     if (!isNaN(hours) && !isNaN(minutes)) {
       newDate.setHours(hours);
       newDate.setMinutes(minutes);
@@ -181,9 +181,9 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
       newDate.setHours(selectedDate.getHours());
       newDate.setMinutes(selectedDate.getMinutes());
     }
-    
+
     setSelectedDate(newDate);
-    
+
     // Create a synthetic event
     const synthEvent = {
       target: {
@@ -192,7 +192,7 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
         type: 'datetime-local'
       }
     };
-    
+
     onChange(synthEvent);
   };
 
@@ -200,35 +200,35 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
   const getDaysInMonth = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
+
     // First day of the month (0 = Sunday, 1 = Monday, etc.)
     const firstDayOfMonth = new Date(year, month, 1).getDay();
-    
+
     // Last day of the month (28-31)
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     const days = [];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} className="w-7 h-7"></div>);
     }
-    
+
     // Add day cells
     for (let day = 1; day <= daysInMonth; day++) {
       // Create the date object for this day
       const date = new Date(year, month, day);
       const today = new Date();
-      const isToday = 
-        date.getDate() === today.getDate() && 
-        date.getMonth() === today.getMonth() && 
+      const isToday =
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
         date.getFullYear() === today.getFullYear();
-      
-      const isSelected = selectedDate && 
-                        selectedDate.getDate() === day && 
-                        selectedDate.getMonth() === month && 
+
+      const isSelected = selectedDate &&
+                        selectedDate.getDate() === day &&
+                        selectedDate.getMonth() === month &&
                         selectedDate.getFullYear() === year;
-      
+
       days.push(
         <button
           key={`day-${day}`}
@@ -243,33 +243,33 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
         </button>
       );
     }
-    
+
     return days;
   };
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
+    'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  
+
   const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   return (
     <div className="relative" ref={pickerRef}>
       <label htmlFor={id} className="block text-sm font-medium mb-1 flex items-center">
-        <Clock className="h-4 w-4 mr-1" />
+        <Clock className="h-4 w-4 mr-1 text-gray-700 dark:text-white" />
         {label}
       </label>
-      
+
       <div className="relative">
         {/* Read-only display field */}
-        <div 
-          className="w-full p-2 pl-8 border border-border rounded-md bg-gray-50 dark:bg-gray-800 cursor-pointer"
+        <div
+          className="w-full p-2 pl-8 border border-border rounded-md bg-gray-50 dark:bg-gray-800 cursor-pointer text-gray-900 dark:text-white"
           onClick={() => setShowCalendar(!showCalendar)}
         >
           {formattedDisplayValue}
         </div>
-        
+
         {/* Hidden actual input for form submission */}
         <input
           id={id}
@@ -283,10 +283,10 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
           max={max}
           aria-label={label}
         />
-        
+
         <button
           type="button"
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300 hover:text-primary"
           onClick={(e) => {
             e.stopPropagation();
             setShowCalendar(!showCalendar);
@@ -295,56 +295,72 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
           <Calendar className="h-4 w-4" />
         </button>
       </div>
-      
+
       {showCalendar && (
         <div className="absolute z-10 mt-1 p-3 bg-white dark:bg-gray-900 border border-border rounded-md shadow-md w-64">
           {/* Calendar header with month navigation */}
           <div className="flex justify-between items-center mb-2">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={prevMonth}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="font-medium">
+            <div className="font-medium text-gray-900 dark:text-white">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </div>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={nextMonth}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-          
+
           {/* Days of week */}
           <div className="grid grid-cols-7 gap-1 mb-1">
             {daysOfWeek.map(day => (
-              <div key={day} className="w-7 h-7 text-xs text-center text-gray-500">
+              <div key={day} className="w-7 h-7 text-xs text-center text-gray-500 dark:text-gray-400">
                 {day}
               </div>
             ))}
           </div>
-          
+
           {/* Calendar days */}
           <div className="grid grid-cols-7 gap-1">
             {getDaysInMonth()}
           </div>
-          
+
           {/* Time picker */}
           <div className="mt-3 pt-2 border-t border-border flex justify-between items-center">
-            <span className="text-xs text-gray-500">Time:</span>
+            <div className="flex items-center">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1 text-gray-500 dark:text-gray-500"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span className="text-xs text-gray-500 dark:text-white">Time:</span>
+            </div>
             <input
               type="time"
-              className="border border-border rounded p-1 text-sm"
+              className="border border-border rounded p-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               value={selectedTime}
               onChange={handleTimeChange}
               step="60" // Minutes precision
             />
           </div>
-          
+
           {/* Done button */}
           <div className="mt-2 flex justify-end">
             <button
@@ -412,7 +428,7 @@ const MintTicket = () => {
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement
-    
+
     setFormData(prev => {
       if (name === 'validFrom' || name === 'validUntil') {
         try {
@@ -540,7 +556,7 @@ const MintTicket = () => {
             {/* Event ID */}
             <div>
               <label htmlFor="eventId" className="block text-sm font-medium mb-1 flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
+                <Calendar className="h-4 w-4 mr-1 text-gray-700 dark:text-white" />
                 Event ID
               </label>
               <input
@@ -559,7 +575,7 @@ const MintTicket = () => {
             {/* Price */}
             <div>
               <label htmlFor="price" className="block text-sm font-medium mb-1 flex items-center">
-                <Tag className="h-4 w-4 mr-1" />
+                <Tag className="h-4 w-4 mr-1 text-gray-700 dark:text-white" />
                 Price (ETH)
               </label>
               <input
@@ -588,7 +604,7 @@ const MintTicket = () => {
 
             {/* Valid Until - with calendar picker */}
             <SimpleDateTimePicker
-              id="validUntil" 
+              id="validUntil"
               name="validUntil"
               label="Valid Until"
               value={formData.validUntil}
