@@ -40,15 +40,17 @@ describe('TicketNFT Trading Integration', () => {
     };
 
     // Mint the ticket to the buyer
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      1n, 
-      ticketMetadata.eventId,
-      ticketMetadata.price,
-      ticketMetadata.validFrom,
-      ticketMetadata.validUntil,
-      ticketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        1n,
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
 
     // Verify ownership
     expect(await ticketNFT.ownerOf(1)).to.equal(buyer.address);
@@ -86,16 +88,18 @@ describe('TicketNFT Trading Integration', () => {
     for (let i = 1; i <= 3; i++) {
       const ticketPrice = hardhat.ethers.parseEther(String(0.5 * i)); // Different prices
       const isTransferable = i % 2 === 0; // Alternating transferability
-      
-      await ticketNFT.connect(minter).mintTicket(
-        buyer.address, 
-        BigInt(i), 
-        eventId,
-        ticketPrice,
-        BigInt(currentTime + 3600), 
-        BigInt(currentTime + 7200),
-        isTransferable
-      );
+
+      await ticketNFT
+        .connect(minter)
+        .mintTicket(
+          buyer.address,
+          BigInt(i),
+          eventId,
+          ticketPrice,
+          BigInt(currentTime + 3600),
+          BigInt(currentTime + 7200),
+          isTransferable
+        );
     }
 
     // Verify each ticket has the correct metadata

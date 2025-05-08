@@ -1,6 +1,3 @@
 {
-  "exclude": [
-    "contracts/TicketNFT.sol",
-    "contracts/mocks/**"
-  ]
+  "exclude": ["contracts/TicketNFT.sol", "contracts/mocks/**"]
 }

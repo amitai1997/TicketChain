@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 
 // Import custom matchers
-import "@nomicfoundation/hardhat-chai-matchers";
+import '@nomicfoundation/hardhat-chai-matchers';
 
 describe('TicketNFT Access Control', () => {
   let ticketNFT: any; // Use any to avoid TypeScript errors
@@ -50,15 +50,17 @@ describe('TicketNFT Access Control', () => {
     };
 
     await expect(
-      ticketNFT.connect(nonMinter).mintTicket(
-        nonMinter.address, 
-        1, 
-        ticketMetadata.eventId, 
-        ticketMetadata.price, 
-        ticketMetadata.validFrom, 
-        ticketMetadata.validUntil, 
-        ticketMetadata.isTransferable
-      )
+      ticketNFT
+        .connect(nonMinter)
+        .mintTicket(
+          nonMinter.address,
+          1,
+          ticketMetadata.eventId,
+          ticketMetadata.price,
+          ticketMetadata.validFrom,
+          ticketMetadata.validUntil,
+          ticketMetadata.isTransferable
+        )
     ).to.be.reverted;
   });
 
@@ -72,23 +74,23 @@ describe('TicketNFT Access Control', () => {
     };
 
     await expect(
-      ticketNFT.connect(minter).mintTicket(
-        minter.address, 
-        1, 
-        ticketMetadata.eventId, 
-        ticketMetadata.price, 
-        ticketMetadata.validFrom, 
-        ticketMetadata.validUntil, 
-        ticketMetadata.isTransferable
-      )
+      ticketNFT
+        .connect(minter)
+        .mintTicket(
+          minter.address,
+          1,
+          ticketMetadata.eventId,
+          ticketMetadata.price,
+          ticketMetadata.validFrom,
+          ticketMetadata.validUntil,
+          ticketMetadata.isTransferable
+        )
     ).not.to.be.reverted;
   });
 
   it('should prevent revoking admin role for owner', async () => {
     const DEFAULT_ADMIN_ROLE = await ticketNFT.DEFAULT_ADMIN_ROLE();
 
-    await expect(
-      ticketNFT.renounceRole(DEFAULT_ADMIN_ROLE, owner.address)
-    ).to.be.reverted;
+    await expect(ticketNFT.renounceRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.reverted;
   });
 });

@@ -11,11 +11,11 @@ async function main() {
 
   // Hardcoded contract address for local testing - this won't work on hardhat network
   // For testing, let's deploy a new contract instance
-  console.log("Deploying a new TicketNFT contract...");
+  console.log('Deploying a new TicketNFT contract...');
   const TicketNFTFactory = await hre.ethers.getContractFactory('TicketNFT');
   const ticketNFT = await TicketNFTFactory.deploy();
   await ticketNFT.waitForDeployment();
-  
+
   const contractAddress = await ticketNFT.getAddress();
   console.log(`Deployed contract address: ${contractAddress}`);
 
@@ -39,12 +39,12 @@ async function main() {
 
   try {
     const tx = await ticketNFT.mintTicket(
-      recipientAddress, 
-      tokenId, 
-      eventId, 
-      price, 
-      validFrom, 
-      validUntil, 
+      recipientAddress,
+      tokenId,
+      eventId,
+      price,
+      validFrom,
+      validUntil,
       isTransferable
     );
 
