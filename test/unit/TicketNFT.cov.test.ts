@@ -18,8 +18,8 @@ describe('TicketNFT Coverage Test', function () {
   const TOKEN_ID = 1;
   const EVENT_ID = 1;
   const PRICE = hre.ethers.parseEther('0.1');
-  const VALID_FROM = Math.floor(Date.now() / 1000); // now
-  const VALID_UNTIL = VALID_FROM + 86400; // 1 day later
+  let VALID_FROM: number;
+  let VALID_UNTIL: number;
   const IS_TRANSFERABLE = true;
 
   beforeEach(async function () {
@@ -34,6 +34,14 @@ describe('TicketNFT Coverage Test', function () {
     const PAUSER_ROLE = await ticketNFT.PAUSER_ROLE();
     await ticketNFT.grantRole(MINTER_ROLE, minter.address);
     await ticketNFT.grantRole(PAUSER_ROLE, pauser.address);
+
+    // Get current time from the blockchain for validity period
+    const latestBlock = await hre.ethers.provider.getBlock('latest');
+    const currentTime = latestBlock?.timestamp || Math.floor(Date.now() / 1000);
+    
+    // Set validity period to start now and end in future
+    VALID_FROM = currentTime;
+    VALID_UNTIL = currentTime + 86400; // 1 day later
   });
 
   describe('Deployment', function () {
@@ -138,12 +146,14 @@ describe('TicketNFT Coverage Test', function () {
     });
 
     it('should validate ticket time validity', async function () {
-      expect(await ticketNFT.isTicketValid(TOKEN_ID)).to.be.true;
+      // Ticket should be valid since we set VALID_FROM to current blockchain time
+      // This fixes the flaky test by not depending on specific timestamps
+      const isValid = await ticketNFT.isTicketValid(TOKEN_ID);
+      expect(isValid).to.equal(true);
     });
 
     it('should revert for non-existent tickets', async function () {
       await expect(ticketNFT.getTicketMetadata(999)).to.be.reverted;
-
       await expect(ticketNFT.isTicketValid(999)).to.be.reverted;
     });
   });
