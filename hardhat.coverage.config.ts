@@ -24,12 +24,12 @@ const config: HardhatUserConfig = {
           yul: true,
           yulDetails: {
             stackAllocation: true,
-            optimizerSteps: "dhfoDgvulfnTUtnIf"
-          }
-        }
+            optimizerSteps: 'dhfoDgvulfnTUtnIf',
+          },
+        },
       },
       debug: {
-        revertStrings: "strip",
+        revertStrings: 'strip',
       },
     },
   },
@@ -41,7 +41,7 @@ const config: HardhatUserConfig = {
   },
   // Turn off gas reporter during coverage
   gasReporter: {
-    enabled: false
+    enabled: false,
   },
   contractSizer: {
     alphaSort: true,

@@ -37,15 +37,17 @@ describe('TicketNFT Lifecycle', () => {
       isTransferable: true,
     };
 
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      1n, 
-      ticketMetadata.eventId,
-      ticketMetadata.price,
-      ticketMetadata.validFrom,
-      ticketMetadata.validUntil,
-      ticketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        1n,
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
 
     const fetchedTicket = await ticketNFT.getTicketMetadata(1);
     expect(fetchedTicket.eventId).to.equal(ticketMetadata.eventId);
@@ -72,15 +74,17 @@ describe('TicketNFT Lifecycle', () => {
       isTransferable: true,
     };
 
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      1n, 
-      ticketMetadata.eventId,
-      ticketMetadata.price,
-      ticketMetadata.validFrom,
-      ticketMetadata.validUntil,
-      ticketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        1n,
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
 
     // Check ticket is currently not valid
     const initialValidity = await ticketNFT.isTicketValid(1);
@@ -109,23 +113,23 @@ describe('TicketNFT Lifecycle', () => {
       isTransferable: false,
     };
 
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      1n, 
-      nonTransferableTicketMetadata.eventId,
-      nonTransferableTicketMetadata.price,
-      nonTransferableTicketMetadata.validFrom,
-      nonTransferableTicketMetadata.validUntil,
-      nonTransferableTicketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        1n,
+        nonTransferableTicketMetadata.eventId,
+        nonTransferableTicketMetadata.price,
+        nonTransferableTicketMetadata.validFrom,
+        nonTransferableTicketMetadata.validUntil,
+        nonTransferableTicketMetadata.isTransferable
+      );
 
     // Try to transfer a non-transferable ticket
     const newOwner = (await hardhat.ethers.getSigners())[3];
     const transferMethod = 'safeTransferFrom(address,address,uint256)';
     await expect(
-      ticketNFT
-        .connect(buyer)
-        [transferMethod](buyer.address, newOwner.address, 1)
+      ticketNFT.connect(buyer)[transferMethod](buyer.address, newOwner.address, 1)
     ).to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
   });
 
@@ -143,15 +147,17 @@ describe('TicketNFT Lifecycle', () => {
     };
 
     await expect(
-      ticketNFT.connect(minter).mintTicket(
-        buyer.address, 
-        1n, 
-        invalidTicketMetadata.eventId,
-        invalidTicketMetadata.price,
-        invalidTicketMetadata.validFrom,
-        invalidTicketMetadata.validUntil,
-        invalidTicketMetadata.isTransferable
-      )
+      ticketNFT
+        .connect(minter)
+        .mintTicket(
+          buyer.address,
+          1n,
+          invalidTicketMetadata.eventId,
+          invalidTicketMetadata.price,
+          invalidTicketMetadata.validFrom,
+          invalidTicketMetadata.validUntil,
+          invalidTicketMetadata.isTransferable
+        )
     ).to.be.revertedWithCustomError(ticketNFT, 'InvalidTicketTimeRange');
   });
 
@@ -168,15 +174,17 @@ describe('TicketNFT Lifecycle', () => {
       isTransferable: true,
     };
 
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      1n, 
-      ticketMetadata.eventId,
-      ticketMetadata.price,
-      ticketMetadata.validFrom,
-      ticketMetadata.validUntil,
-      ticketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        1n,
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
 
     // Burn the ticket
     await ticketNFT.connect(buyer).burn(1);

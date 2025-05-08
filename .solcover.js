@@ -1,7 +1,7 @@
 module.exports = {
   skipFiles: ['mocks/'],
   istanbulReporter: ['html', 'lcov', 'text', 'json'],
-  // Turn off the Yul optimizer during coverage 
+  // Turn off the Yul optimizer during coverage
   // This helps with stack too deep errors
   configureYulOptimizer: false,
   mocha: {
@@ -15,8 +15,8 @@ module.exports = {
   measureBranchCoverage: false,
   // Skip instrumenting complex functions that are likely to hit stack limits
   skipFunctionNames: [
-    // Don't instrument burn/transfer logic 
+    // Don't instrument burn/transfer logic
     '_burn',
-    '_removeTokenFromAllTokens'
-  ]
+    '_removeTokenFromAllTokens',
+  ],
 };

@@ -26,18 +26,18 @@ if (!fs.existsSync(coverageDir)) {
 
 // Create a minimal coverage JSON file
 const coverageJson = {
-  "total": {
-    "lines": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "statements": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "functions": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "branches": {"total": 100, "covered": 80, "skipped": 20, "pct": 80}
+  total: {
+    lines: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    statements: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    functions: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    branches: { total: 100, covered: 80, skipped: 20, pct: 80 },
   },
-  "contracts/TicketNFT.sol": {
-    "lines": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "functions": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "statements": {"total": 100, "covered": 80, "skipped": 20, "pct": 80},
-    "branches": {"total": 100, "covered": 80, "skipped": 20, "pct": 80}
-  }
+  'contracts/TicketNFT.sol': {
+    lines: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    functions: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    statements: { total: 100, covered: 80, skipped: 20, pct: 80 },
+    branches: { total: 100, covered: 80, skipped: 20, pct: 80 },
+  },
 };
 
 fs.writeFileSync(
@@ -78,10 +78,7 @@ const htmlReport = `
 </html>
 `;
 
-fs.writeFileSync(
-  path.join(coverageDir, 'index.html'),
-  htmlReport
-);
+fs.writeFileSync(path.join(coverageDir, 'index.html'), htmlReport);
 
 console.log('Created dummy coverage report. Stack too deep error is being addressed.');
 console.log('');

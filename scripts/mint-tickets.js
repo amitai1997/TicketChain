@@ -34,11 +34,11 @@ async function main() {
 
   // Get the contract factory
   const TicketNFT = await ethers.getContractFactory('TicketNFT');
-  
+
   // Deploy the contract (this changes in ethers v6)
   // Unlike v5's attach(), we use the contract factory to get a deployed instance at a specific address
   const ticketNFT = TicketNFT.attach(contractAddress);
-  
+
   console.log(`Connected to TicketNFT at ${contractAddress}`);
 
   // Generate a unique token ID to avoid conflicts

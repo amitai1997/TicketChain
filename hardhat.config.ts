@@ -1,12 +1,9 @@
-
 import { HardhatUserConfig } from 'hardhat/config';
-
-// Import plugins
-require('@nomicfoundation/hardhat-toolbox');
-require('@typechain/hardhat');
-require('hardhat-gas-reporter');
-require('hardhat-contract-sizer');
-require('dotenv/config');
+import '@nomicfoundation/hardhat-toolbox';
+import '@typechain/hardhat';
+import 'hardhat-gas-reporter';
+import 'hardhat-contract-sizer';
+import 'dotenv/config';
 
 // Always enable viaIR to handle stack too deep errors
 const config: HardhatUserConfig = {
