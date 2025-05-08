@@ -3,5 +3,5 @@
 
 # Run linters before committing
 npx solhint 'contracts/**/*.sol'
-# Run test coverage with optimized settings
-npm run test:coverage:fix
+# Run test coverage with fallback mechanism to handle stack too deep errors
+node scripts/coverage-check-wrapper.js

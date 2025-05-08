@@ -4,9 +4,5 @@ module.exports = {
   configureYulOptimizer: false,
   mocha: {
     timeout: 100000,
-  },
-  // Disable solc optimizer
-  solcOptimizerDetails: {
-    enabled: false,
-  },
+  }
 };

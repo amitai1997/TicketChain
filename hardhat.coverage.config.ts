@@ -1,0 +1,55 @@
+import { HardhatUserConfig } from 'hardhat/config';
+
+// Import plugins
+require('@nomicfoundation/hardhat-toolbox');
+require('@typechain/hardhat');
+require('hardhat-gas-reporter');
+require('hardhat-contract-sizer');
+require('dotenv/config');
+require('solidity-coverage');
+
+// Enhanced viaIR config for coverage
+const config: HardhatUserConfig = {
+  solidity: {
+    version: '0.8.20',
+    settings: {
+      viaIR: true,
+      optimizer: {
+        enabled: true,
+        runs: 200,
+        details: {
+          yul: true
+        }
+      },
+      debug: {
+        revertStrings: 'strip',
+      },
+    },
+  },
+  networks: {
+    hardhat: {
+      chainId: 1337,
+      allowUnlimitedContractSize: true,
+    },
+  },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS !== undefined,
+    currency: 'USD',
+  },
+  contractSizer: {
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
+    only: [':TicketNFT$'],
+  },
+  mocha: {
+    timeout: 100000, // 100 seconds
+  },
+  typechain: {
+    outDir: 'typechain-types',
+    target: 'ethers-v6',
+  },
+};
+
+export default config;
