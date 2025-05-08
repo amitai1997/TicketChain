@@ -32,7 +32,7 @@ describe('TicketNFT Trading Integration', () => {
     // 1. Create a ticket
     const currentTime = Math.floor(Date.now() / 1000);
     const ticketMetadata = {
-      eventId: 1,
+      eventId: 1n,
       price: hardhat.ethers.parseEther('0.5'),
       validFrom: BigInt(currentTime + 3600), // 1 hour from now
       validUntil: BigInt(currentTime + 7200), // 2 hours from now
@@ -40,7 +40,15 @@ describe('TicketNFT Trading Integration', () => {
     };
 
     // Mint the ticket to the buyer
-    await ticketNFT.connect(minter).mintTicket(buyer.address, 1, ticketMetadata);
+    await ticketNFT.connect(minter).mintTicket(
+      buyer.address, 
+      1n, 
+      ticketMetadata.eventId,
+      ticketMetadata.price,
+      ticketMetadata.validFrom,
+      ticketMetadata.validUntil,
+      ticketMetadata.isTransferable
+    );
 
     // Verify ownership
     expect(await ticketNFT.ownerOf(1)).to.equal(buyer.address);
@@ -72,19 +80,22 @@ describe('TicketNFT Trading Integration', () => {
 
   it('should handle minting and managing multiple tickets for an event', async () => {
     const currentTime = Math.floor(Date.now() / 1000);
-    const eventId = 2;
+    const eventId = 2n;
 
     // Create 3 tickets for the same event
     for (let i = 1; i <= 3; i++) {
-      const ticketMetadata = {
-        eventId: eventId,
-        price: hardhat.ethers.parseEther(String(0.5 * i)), // Different prices
-        validFrom: BigInt(currentTime + 3600),
-        validUntil: BigInt(currentTime + 7200),
-        isTransferable: i % 2 === 0, // Alternating transferability
-      };
-
-      await ticketNFT.connect(minter).mintTicket(buyer.address, i, ticketMetadata);
+      const ticketPrice = hardhat.ethers.parseEther(String(0.5 * i)); // Different prices
+      const isTransferable = i % 2 === 0; // Alternating transferability
+      
+      await ticketNFT.connect(minter).mintTicket(
+        buyer.address, 
+        BigInt(i), 
+        eventId,
+        ticketPrice,
+        BigInt(currentTime + 3600), 
+        BigInt(currentTime + 7200),
+        isTransferable
+      );
     }
 
     // Verify each ticket has the correct metadata
