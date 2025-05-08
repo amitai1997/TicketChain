@@ -1,5 +1,6 @@
 import hre from 'hardhat';
 import { setupMinterRole } from './utils/role-setup';
+import { TicketNFT } from '../typechain-types/contracts/TicketNFT';
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -8,16 +9,18 @@ async function main() {
   const networkName = hre.network.name;
   console.log(`Network: ${networkName}`);
 
-  // Hardcoded contract address for local testing
-  const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-  console.log(`Using contract address: ${contractAddress}`);
+  // Hardcoded contract address for local testing - this won't work on hardhat network
+  // For testing, let's deploy a new contract instance
+  console.log("Deploying a new TicketNFT contract...");
+  const TicketNFTFactory = await hre.ethers.getContractFactory('TicketNFT');
+  const ticketNFT = await TicketNFTFactory.deploy();
+  await ticketNFT.waitForDeployment();
+  
+  const contractAddress = await ticketNFT.getAddress();
+  console.log(`Deployed contract address: ${contractAddress}`);
 
   // Setup minter role if not already granted
   await setupMinterRole(contractAddress);
-
-  // Get the contract instance
-  const TicketNFT = await hre.ethers.getContractFactory('TicketNFT');
-  const ticketNFT = TicketNFT.attach(contractAddress);
 
   // Get current timestamp
   const currentTime = Math.floor(Date.now() / 1000);
