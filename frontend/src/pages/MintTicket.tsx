@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import TicketNFTAbi from "@/artifacts/contracts/TicketNFT.sol/TicketNFT.json";
-// File: src/pages/MintTicket.tsx
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Ticket, Tag, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -8,6 +7,7 @@ import { useAccount } from 'wagmi'
 import { useTicketNFT } from '@/hooks/useTicketNFT'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { toast } from 'sonner'
+import PropTypes from 'prop-types'
 
 // Helper function to format date for display
 const formatDateForDisplay = (date) => {
@@ -375,6 +375,18 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
       )}
     </div>
   );
+};
+
+// Define PropTypes for SimpleDateTimePicker component
+SimpleDateTimePicker.propTypes = {
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.instanceOf(Date).isRequired,
+  onChange: PropTypes.func.isRequired,
+  required: PropTypes.bool,
+  min: PropTypes.string,
+  max: PropTypes.string
 };
 
 const MintTicket = () => {

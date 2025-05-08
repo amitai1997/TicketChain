@@ -133,7 +133,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
+      // Check if this day is today for special styling
+      const currentDate = new Date();
+      const isToday = 
+        currentDate.getDate() === day && 
+        currentDate.getMonth() === month && 
+        currentDate.getFullYear() === year;
+      
       const isSelected = selectedDate && 
                           selectedDate.getDate() === day && 
                           selectedDate.getMonth() === month && 
@@ -144,7 +150,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           key={`day-${day}`}
           type="button"
           className={`h-8 w-8 rounded-full flex items-center justify-center text-sm
-                    ${isSelected ? 'bg-primary text-primary-foreground' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                    ${isSelected ? 'bg-primary text-primary-foreground' : ''}
+                    ${isToday && !isSelected ? 'border border-primary text-primary' : ''}
+                    ${!isSelected && !isToday ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : ''}`}
           onClick={() => handleDateSelect(day)}
         >
           {day}
