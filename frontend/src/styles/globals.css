@@ -76,11 +76,13 @@
   body {
     @apply bg-background text-foreground;
     @apply antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 
   /* RTL support */
-  [dir="rtl"] .flip-x {
+  [dir='rtl'] .flip-x {
     transform: scaleX(-1);
   }
 }
@@ -141,28 +143,28 @@
 }
 
 /* make the entire <input type="time"> show a pointer on hover */
-input[type="time"] {
+input[type='time'] {
   cursor: pointer;
 }
 
 /* LIGHT MODE: default (black) clock icon */
-input[type="time"]::-webkit-calendar-picker-indicator {
+input[type='time']::-webkit-calendar-picker-indicator {
   opacity: 1;
   filter: invert(0%); /* leave as-is for black */
   cursor: pointer;
 }
-input[type="time"]::-moz-color-swatch-wrapper {
+input[type='time']::-moz-color-swatch-wrapper {
   filter: invert(0%);
   cursor: pointer;
 }
 
 /* DARK MODE: white clock icon */
-.dark input[type="time"]::-webkit-calendar-picker-indicator {
+.dark input[type='time']::-webkit-calendar-picker-indicator {
   opacity: 1;
   filter: invert(100%); /* white */
   cursor: pointer;
 }
-.dark input[type="time"]::-moz-color-swatch-wrapper {
+.dark input[type='time']::-moz-color-swatch-wrapper {
   filter: invert(100%);
   cursor: pointer;
 }

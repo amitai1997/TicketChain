@@ -1,67 +1,62 @@
 // File: src/pages/Dashboard.tsx
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import {
-  Calendar,
-  Clock,
-  Tag,
-  Ticket as TicketIcon,
-  Send,
-  RefreshCw
-} from 'lucide-react'
-import { useAccount } from 'wagmi'
-import { useTicketNFT, Ticket } from '@/hooks/useTicketNFT'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { toast } from 'sonner'
+import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Clock, Tag, Ticket as TicketIcon, Send, RefreshCw } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { useTicketNFT, Ticket } from '@/hooks/useTicketNFT';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { toast } from 'sonner';
 
 // Format date from timestamp
 const formatDate = (timestamp: bigint) => {
-  return new Date(Number(timestamp) * 1000).toLocaleString()
-}
+  return new Date(Number(timestamp) * 1000).toLocaleString();
+};
 
 // Format price from Wei
 const formatPrice = (priceInWei: bigint) => {
   // Convert Wei to Ether
-  const priceInEther = Number(priceInWei) / 1e18
-  return `${priceInEther.toFixed(4)} ETH`
-}
+  const priceInEther = Number(priceInWei) / 1e18;
+  return `${priceInEther.toFixed(4)} ETH`;
+};
 
 // Transfer ticket modal component
 const TransferTicketModal = ({
   ticket,
   isOpen,
   onClose,
-  onTransfer
+  onTransfer,
 }: {
-  ticket: Ticket | null,
-  isOpen: boolean,
-  onClose: () => void,
-  onTransfer: (to: string) => Promise<void>
+  ticket: Ticket | null;
+  isOpen: boolean;
+  onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onTransfer: (to: string) => Promise<void>;
 }) => {
-  const [recipientAddress, setRecipientAddress] = useState('')
-  const [isTransferring, setIsTransferring] = useState(false)
+  const [recipientAddress, setRecipientAddress] = useState('');
+  const [isTransferring, setIsTransferring] = useState(false);
 
-  if (!isOpen || !ticket) return null
+  if (!isOpen || !ticket) return null;
 
   const handleTransfer = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!recipientAddress.trim()) {
-      toast.error('Please enter a recipient address')
-      return
+      toast.error('Please enter a recipient address');
+      return;
     }
 
-    setIsTransferring(true)
+    setIsTransferring(true);
 
     try {
-      await onTransfer(recipientAddress)
-      onClose()
+      await onTransfer(recipientAddress);
+      onClose();
     } catch (error) {
-      console.error('Transfer error:', error)
+      console.error('Transfer error:', error);
     } finally {
-      setIsTransferring(false)
+      setIsTransferring(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -70,7 +65,10 @@ const TransferTicketModal = ({
 
         <form onSubmit={handleTransfer}>
           <div className="mb-4">
-            <label htmlFor="recipient" className="block text-sm font-medium text-muted-foreground mb-1">
+            <label
+              htmlFor="recipient"
+              className="block text-sm font-medium text-muted-foreground mb-1"
+            >
               Recipient Address
             </label>
             <input
@@ -115,25 +113,28 @@ const TransferTicketModal = ({
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Ticket card component
 const TicketCard = ({
   ticket,
-  onTransfer
+  onTransfer,
 }: {
-  ticket: Ticket,
-  onTransfer: (ticket: Ticket) => void
+  ticket: Ticket;
+  // eslint-disable-next-line no-unused-vars
+  onTransfer: (ticket: Ticket) => void;
 }) => {
-  const now = Math.floor(Date.now() / 1000)
-  const isExpired = Number(ticket.metadata.validUntil) < now
+  const now = Math.floor(Date.now() / 1000);
+  const isExpired = Number(ticket.metadata.validUntil) < now;
 
   return (
     <div className="ticket-container">
       <div className="ticket-header">
         <h3 className="ticket-title">Ticket #{ticket.id.toString()}</h3>
-        <span className={`ticket-badge ${isExpired ? 'ticket-badge-expired' : 'ticket-badge-valid'}`}>
+        <span
+          className={`ticket-badge ${isExpired ? 'ticket-badge-expired' : 'ticket-badge-valid'}`}
+        >
           {isExpired ? 'Expired' : 'Valid'}
         </span>
       </div>
@@ -184,49 +185,45 @@ const TicketCard = ({
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Dashboard page component
 const Dashboard = () => {
-  const navigate = useNavigate()
-  const { isConnected } = useAccount()
-  const { userTickets, isLoading, fetchUserTickets, transferTicketTo } = useTicketNFT()
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+  const navigate = useNavigate();
+  const { isConnected } = useAccount();
+  const { userTickets, isLoading, fetchUserTickets, transferTicketTo } = useTicketNFT();
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   // Handle transfer ticket button click
   const handleTransferClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket)
-    setIsTransferModalOpen(true)
-  }
+    setSelectedTicket(ticket);
+    setIsTransferModalOpen(true);
+  };
 
   // Handle ticket transfer
   const handleTransferTicket = async (to: string) => {
-    if (!selectedTicket) return
+    if (!selectedTicket) return;
 
     try {
-      await transferTicketTo(
-        selectedTicket.owner,
-        to,
-        selectedTicket.id
-      )
+      await transferTicketTo(selectedTicket.owner, to, selectedTicket.id);
 
       // Close modal and refresh tickets after a short delay
       setTimeout(() => {
-        fetchUserTickets()
-      }, 2000)
+        fetchUserTickets();
+      }, 2000);
     } catch (error) {
-      console.error('Transfer failed:', error)
-      toast.error('Failed to transfer ticket')
+      console.error('Transfer failed:', error);
+      toast.error('Failed to transfer ticket');
     }
-  }
+  };
 
   // Calculate dashboard stats
-  const totalTickets = userTickets.length
-  const validTickets = userTickets.filter(ticket =>
-    Number(ticket.metadata.validUntil) > Math.floor(Date.now() / 1000)
-  ).length
+  const totalTickets = userTickets.length;
+  const validTickets = userTickets.filter(
+    (ticket) => Number(ticket.metadata.validUntil) > Math.floor(Date.now() / 1000)
+  ).length;
 
   // If not connected, show connect wallet message
   if (!isConnected) {
@@ -243,7 +240,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -297,9 +294,7 @@ const Dashboard = () => {
         <div className="text-center py-12 border border-dashed border-border rounded-lg">
           <TicketIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-xl font-medium mb-2">No tickets found</h2>
-          <p className="text-muted-foreground mb-6">
-            You don't have any NFT tickets yet
-          </p>
+          <p className="text-muted-foreground mb-6">You don't have any NFT tickets yet</p>
           <button
             onClick={() => navigate('/mint')}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center mx-auto"
@@ -318,7 +313,7 @@ const Dashboard = () => {
         onTransfer={handleTransferTicket}
       />
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

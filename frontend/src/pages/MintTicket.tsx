@@ -1,13 +1,13 @@
-import { ethers } from "ethers";
-import TicketNFTAbi from "@/artifacts/contracts/TicketNFT.sol/TicketNFT.json";
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Ticket, Tag, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useAccount } from 'wagmi'
-import { useTicketNFT } from '@/hooks/useTicketNFT'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { toast } from 'sonner'
-import PropTypes from 'prop-types'
+import React from 'react';
+import { ethers } from 'ethers';
+import TicketNFTAbi from '@/artifacts/contracts/TicketNFT.sol/TicketNFT.json';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Ticket, Tag, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { useTicketNFT } from '@/hooks/useTicketNFT';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { toast } from 'sonner';
 
 // Helper function to format date for display
 const formatDateForDisplay = (date) => {
@@ -22,7 +22,7 @@ const formatDateForDisplay = (date) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
@@ -55,7 +55,7 @@ const ensureValidDate = (dateValue) => {
     const date = new Date(dateValue);
     return isNaN(date.getTime()) ? new Date() : date;
   } catch (e) {
-    console.error("Invalid date value:", e);
+    console.error('Invalid date value:', e);
     return new Date();
   }
 };
@@ -76,7 +76,8 @@ const parseLocalDateTimeString = (dateTimeString) => {
   // Parse the date string manually to preserve local time
   const [datePart, timePart] = dateTimeString.split('T');
   const [year, month, day] = datePart.split('-').map(Number);
-  let hours = 0, minutes = 0;
+  let hours = 0,
+    minutes = 0;
 
   if (timePart) {
     [hours, minutes] = timePart.split(':').map(Number);
@@ -96,7 +97,16 @@ const parseLocalDateTimeString = (dateTimeString) => {
 };
 
 // Component for date/time picker
-const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = false, min = undefined, max = undefined }) => {
+const SimpleDateTimePicker = ({
+  id,
+  name,
+  label,
+  value,
+  onChange,
+  required = false,
+  min = undefined,
+  max = undefined,
+}) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date(value));
   const [selectedDate, setSelectedDate] = useState(value);
@@ -148,7 +158,7 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
 
     // Update the full date with the new time
     const newDate = new Date(selectedDate);
-    const [hours, minutes] = timeValue.split(':').map(part => parseInt(part, 10));
+    const [hours, minutes] = timeValue.split(':').map((part) => parseInt(part, 10));
 
     if (!isNaN(hours) && !isNaN(minutes)) {
       newDate.setHours(hours);
@@ -159,8 +169,8 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
         target: {
           name,
           value: formatDateForInput(newDate),
-          type: 'datetime-local'
-        }
+          type: 'datetime-local',
+        },
       };
 
       onChange(synthEvent);
@@ -171,7 +181,7 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
   const handleDateSelect = (date) => {
     // Create a new date preserving the original time
     const newDate = new Date(date);
-    const [hours, minutes] = selectedTime.split(':').map(part => parseInt(part, 10));
+    const [hours, minutes] = selectedTime.split(':').map((part) => parseInt(part, 10));
 
     if (!isNaN(hours) && !isNaN(minutes)) {
       newDate.setHours(hours);
@@ -189,8 +199,8 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
       target: {
         name,
         value: formatDateForInput(newDate),
-        type: 'datetime-local'
-      }
+        type: 'datetime-local',
+      },
     };
 
     onChange(synthEvent);
@@ -224,10 +234,11 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
         date.getMonth() === today.getMonth() &&
         date.getFullYear() === today.getFullYear();
 
-      const isSelected = selectedDate &&
-                        selectedDate.getDate() === day &&
-                        selectedDate.getMonth() === month &&
-                        selectedDate.getFullYear() === year;
+      const isSelected =
+        selectedDate &&
+        selectedDate.getDate() === day &&
+        selectedDate.getMonth() === month &&
+        selectedDate.getFullYear() === year;
 
       days.push(
         <button
@@ -248,8 +259,18 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
   };
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -321,17 +342,18 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
 
           {/* Days of week */}
           <div className="grid grid-cols-7 gap-1 mb-1">
-            {daysOfWeek.map(day => (
-              <div key={day} className="w-7 h-7 text-xs text-center text-gray-500 dark:text-gray-400">
+            {daysOfWeek.map((day) => (
+              <div
+                key={day}
+                className="w-7 h-7 text-xs text-center text-gray-500 dark:text-gray-400"
+              >
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar days */}
-          <div className="grid grid-cols-7 gap-1">
-            {getDaysInMonth()}
-          </div>
+          <div className="grid grid-cols-7 gap-1">{getDaysInMonth()}</div>
 
           {/* Time picker */}
           <div className="mt-3 pt-2 border-t border-border flex justify-between items-center">
@@ -377,24 +399,12 @@ const SimpleDateTimePicker = ({ id, name, label, value, onChange, required = fal
   );
 };
 
-// Define PropTypes for SimpleDateTimePicker component
-SimpleDateTimePicker.propTypes = {
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.instanceOf(Date).isRequired,
-  onChange: PropTypes.func.isRequired,
-  required: PropTypes.bool,
-  min: PropTypes.string,
-  max: PropTypes.string
-};
-
 const MintTicket = () => {
-  const navigate = useNavigate()
-  const { isConnected, address } = useAccount()
-  const { mintNewTicket, totalSupply, contractAddress } = useTicketNFT()
-  const [isMinting, setIsMinting] = useState(false)
-  const [hasMinterRole, setHasMinterRole] = useState(false)
+  const navigate = useNavigate();
+  const { isConnected, address } = useAccount();
+  const { mintNewTicket, totalSupply, contractAddress } = useTicketNFT();
+  const [isMinting, setIsMinting] = useState(false);
+  const [hasMinterRole, setHasMinterRole] = useState(false);
 
   // Form state with validated dates
   const [formData, setFormData] = useState({
@@ -403,7 +413,7 @@ const MintTicket = () => {
     validFrom: new Date(),
     validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days later
     isTransferable: true,
-  })
+  });
 
   // Check if user has MINTER_ROLE
   useEffect(() => {
@@ -411,37 +421,33 @@ const MintTicket = () => {
       if (isConnected && address) {
         try {
           // Create an ethers provider
-          if (!window.ethereum) return
+          if (!window.ethereum) return;
 
-          const provider = new ethers.providers.Web3Provider(window.ethereum)
-          const contract = new ethers.Contract(
-            contractAddress,
-            TicketNFTAbi.abi,
-            provider
-          )
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const contract = new ethers.Contract(contractAddress, TicketNFTAbi.abi, provider);
 
           // Get MINTER_ROLE
-          const MINTER_ROLE = await contract.MINTER_ROLE()
+          const MINTER_ROLE = await contract.MINTER_ROLE();
 
           // Check if user has MINTER_ROLE
-          const hasRole = await contract.hasRole(MINTER_ROLE, address)
-          setHasMinterRole(hasRole)
+          const hasRole = await contract.hasRole(MINTER_ROLE, address);
+          setHasMinterRole(hasRole);
 
-          console.log(`User ${address} ${hasRole ? 'has' : 'does not have'} MINTER_ROLE`)
+          console.log(`User ${address} ${hasRole ? 'has' : 'does not have'} MINTER_ROLE`);
         } catch (error) {
-          console.error('Error checking MINTER_ROLE:', error)
+          console.error('Error checking MINTER_ROLE:', error);
         }
       }
-    }
+    };
 
-    checkMinterRole()
-  }, [isConnected, address, contractAddress])
+    checkMinterRole();
+  }, [isConnected, address, contractAddress]);
 
   // Handle form change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement
+    const { name, value, type } = e.target as HTMLInputElement;
 
-    setFormData(prev => {
+    setFormData((prev) => {
       if (name === 'validFrom' || name === 'validUntil') {
         try {
           // Parse the date string from the input and create a valid Date object
@@ -463,26 +469,26 @@ const MintTicket = () => {
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!isConnected || !address) {
-      toast.error('Please connect your wallet first')
-      return
+      toast.error('Please connect your wallet first');
+      return;
     }
 
     try {
-      setIsMinting(true)
+      setIsMinting(true);
 
       // Ensure dates are valid before proceeding
       const validFromDate = ensureValidDate(formData.validFrom);
       const validUntilDate = ensureValidDate(formData.validUntil);
 
       // Calculate token ID based on total supply
-      const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n
+      const newTokenId = totalSupply ? BigInt(Number(totalSupply) + 1) : 1n;
 
       // Convert dates to Unix timestamps
-      const validFrom = Math.floor(validFromDate.getTime() / 1000)
-      const validUntil = Math.floor(validUntilDate.getTime() / 1000)
+      const validFrom = Math.floor(validFromDate.getTime() / 1000);
+      const validUntil = Math.floor(validUntilDate.getTime() / 1000);
 
       console.log('Minting ticket with params:', {
         address,
@@ -492,8 +498,8 @@ const MintTicket = () => {
         validFrom,
         validUntil,
         isTransferable: formData.isTransferable,
-        contractAddress
-      })
+        contractAddress,
+      });
 
       // Simplified approach - just use the hook to mint
       await mintNewTicket(
@@ -504,30 +510,30 @@ const MintTicket = () => {
         validFrom,
         validUntil,
         formData.isTransferable
-      )
+      );
 
-      toast.success('Ticket minted successfully!')
+      toast.success('Ticket minted successfully!');
 
       // Redirect to dashboard after successful minting
       setTimeout(() => {
-        navigate('/')
-      }, 2000)
+        navigate('/');
+      }, 2000);
     } catch (error) {
-      console.error('Error minting ticket:', error)
+      console.error('Error minting ticket:', error);
 
       // Display a user-friendly error message
-      let errorMessage = 'Failed to mint ticket'
+      let errorMessage = 'Failed to mint ticket';
       if (error.reason) {
-        errorMessage += `: ${error.reason}`
+        errorMessage += `: ${error.reason}`;
       } else if (error.message) {
-        errorMessage += `: ${error.message}`
+        errorMessage += `: ${error.message}`;
       }
 
-      toast.error(errorMessage)
+      toast.error(errorMessage);
     } finally {
-      setIsMinting(false)
+      setIsMinting(false);
     }
-  }
+  };
 
   // If not connected, show connect wallet message
   if (!isConnected) {
@@ -544,7 +550,7 @@ const MintTicket = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -557,7 +563,8 @@ const MintTicket = () => {
       {!hasMinterRole && (
         <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-6">
           <p className="text-yellow-700 dark:text-yellow-200">
-            Your account doesn't have minter permissions. We'll attempt to grant you the MINTER_ROLE when you submit the form.
+            Your account doesn't have minter permissions. We'll attempt to grant you the MINTER_ROLE
+            when you submit the form.
           </p>
         </div>
       )}
@@ -622,9 +629,13 @@ const MintTicket = () => {
               value={formData.validUntil}
               onChange={handleChange}
               required
-              min={formData.validFrom ? formatDateForInput(
-                new Date(formData.validFrom.getTime() + 60 * 60 * 1000) // At least 1 hour after valid from
-              ) : undefined}
+              min={
+                formData.validFrom
+                  ? formatDateForInput(
+                      new Date(formData.validFrom.getTime() + 60 * 60 * 1000) // At least 1 hour after valid from
+                    )
+                  : undefined
+              }
             />
 
             {/* Is Transferable */}
@@ -667,7 +678,7 @@ const MintTicket = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MintTicket
+export default MintTicket;

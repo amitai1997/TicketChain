@@ -18,32 +18,43 @@ repos:
 
   - repo: local
     hooks:
-      - id: eslint
-        name: ESLint
-        entry: pnpm eslint
-        language: node
-        types_or: [javascript, jsx, ts, tsx]
-        args: ['--fix']
-
-      - id: solhint
+      - id: lint-sol
         name: Solhint
-        entry: pnpm solhint
+        entry: pnpm lint:sol
         language: node
         types: [file]
         files: \.sol$
 
+      - id: lint-ts
+        name: ESLint (root)
+        entry: pnpm lint:ts
+        language: node
+        types_or: [javascript, jsx, ts, tsx]
+
+      - id: lint-frontend
+        name: ESLint (frontend)
+        entry: pnpm --filter ./frontend lint
+        language: system
+        pass_filenames: false
+        types: [ts, tsx]
+
       - id: prettier
         name: Prettier
-        entry: pnpm prettier --write
+        entry: pnpm prettier --check
         language: node
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
 
-      - id: test
-        name: Run tests
-        entry: pnpm test
+      - id: test-root
+        name: Run root tests
+        entry: pnpm test:all
         language: node
         pass_filenames: false
-        stages: [pre-push]
+
+      - id: test-frontend
+        name: Run frontend tests
+        entry: pnpm --filter ./frontend test
+        language: node
+        pass_filenames: false
 
       - id: commitlint
         name: Validate commit message

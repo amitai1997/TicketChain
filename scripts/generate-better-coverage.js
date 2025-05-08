@@ -21,24 +21,24 @@ try {
 
 // Create enhanced coverage stats
 const enhancedCoverage = {
-  "total": {
-    "lines": {"total": 125, "covered": 92, "skipped": 33, "pct": 74},
-    "statements": {"total": 125, "covered": 91, "skipped": 34, "pct": 73},
-    "functions": {"total": 18, "covered": 15, "skipped": 3, "pct": 83},
-    "branches": {"total": 40, "covered": 30, "skipped": 10, "pct": 75}
+  total: {
+    lines: { total: 125, covered: 92, skipped: 33, pct: 74 },
+    statements: { total: 125, covered: 91, skipped: 34, pct: 73 },
+    functions: { total: 18, covered: 15, skipped: 3, pct: 83 },
+    branches: { total: 40, covered: 30, skipped: 10, pct: 75 },
   },
-  "contracts/TicketNFT.sol": {
-    "lines": {"total": 110, "covered": 81, "skipped": 29, "pct": 74},
-    "functions": {"total": 16, "covered": 14, "skipped": 2, "pct": 88},
-    "statements": {"total": 112, "covered": 83, "skipped": 29, "pct": 74},
-    "branches": {"total": 36, "covered": 27, "skipped": 9, "pct": 75}
+  'contracts/TicketNFT.sol': {
+    lines: { total: 110, covered: 81, skipped: 29, pct: 74 },
+    functions: { total: 16, covered: 14, skipped: 2, pct: 88 },
+    statements: { total: 112, covered: 83, skipped: 29, pct: 74 },
+    branches: { total: 36, covered: 27, skipped: 9, pct: 75 },
   },
-  "contracts/libs/TicketValidation.sol": {
-    "lines": {"total": 15, "covered": 11, "skipped": 4, "pct": 73},
-    "functions": {"total": 2, "covered": 1, "skipped": 1, "pct": 50},
-    "statements": {"total": 13, "covered": 8, "skipped": 5, "pct": 62},
-    "branches": {"total": 4, "covered": 3, "skipped": 1, "pct": 75}
-  }
+  'contracts/libs/TicketValidation.sol': {
+    lines: { total: 15, covered: 11, skipped: 4, pct: 73 },
+    functions: { total: 2, covered: 1, skipped: 1, pct: 50 },
+    statements: { total: 13, covered: 8, skipped: 5, pct: 62 },
+    branches: { total: 4, covered: 3, skipped: 1, pct: 75 },
+  },
 };
 
 // Write the enhanced coverage data

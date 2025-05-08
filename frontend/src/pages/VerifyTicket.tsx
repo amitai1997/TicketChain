@@ -1,66 +1,73 @@
 // File: src/pages/VerifyTicket.tsx
-import { useState } from 'react'
-import { Search, Ticket as TicketIcon, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
-import { useTicketNFT } from '@/hooks/useTicketNFT'
-import { toast } from 'sonner'
+import React from 'react';
+import { useState } from 'react';
+import {
+  Search,
+  Ticket as TicketIcon,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+} from 'lucide-react';
+import { useTicketNFT } from '@/hooks/useTicketNFT';
+import { toast } from 'sonner';
 
 // Format date from timestamp
 const formatDate = (timestamp: bigint) => {
-  return new Date(Number(timestamp) * 1000).toLocaleString()
-}
+  return new Date(Number(timestamp) * 1000).toLocaleString();
+};
 
 // Format price from Wei
 const formatPrice = (priceInWei: bigint) => {
   // Convert Wei to Ether
-  const priceInEther = Number(priceInWei) / 1e18
-  return `${priceInEther.toFixed(4)} ETH`
-}
+  const priceInEther = Number(priceInWei) / 1e18;
+  return `${priceInEther.toFixed(4)} ETH`;
+};
 
 const VerifyTicket = () => {
-  const [ticketId, setTicketId] = useState('')
-  const [verifiedTicket, setVerifiedTicket] = useState<any | null>(null)
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isVerified, setIsVerified] = useState<boolean | null>(null)
-  const { fetchTicketData } = useTicketNFT()
+  const [ticketId, setTicketId] = useState('');
+  const [verifiedTicket, setVerifiedTicket] = useState<any | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const { fetchTicketData } = useTicketNFT();
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!ticketId.trim()) {
-      toast.error('Please enter a ticket ID')
-      return
+      toast.error('Please enter a ticket ID');
+      return;
     }
 
     try {
-      setIsVerifying(true)
-      setVerifiedTicket(null)
-      setIsVerified(null)
+      setIsVerifying(true);
+      setVerifiedTicket(null);
+      setIsVerified(null);
 
-      const ticket = await fetchTicketData(BigInt(ticketId))
+      const ticket = await fetchTicketData(BigInt(ticketId));
 
       if (ticket) {
-        setVerifiedTicket(ticket)
+        setVerifiedTicket(ticket);
 
         // Check if ticket is valid (not expired)
-        const now = Math.floor(Date.now() / 1000)
+        const now = Math.floor(Date.now() / 1000);
         const isValid =
-          Number(ticket.metadata.validFrom) <= now &&
-          Number(ticket.metadata.validUntil) > now
+          Number(ticket.metadata.validFrom) <= now && Number(ticket.metadata.validUntil) > now;
 
-        setIsVerified(isValid)
+        setIsVerified(isValid);
       } else {
-        toast.error('Ticket not found')
-        setIsVerified(false)
+        toast.error('Ticket not found');
+        setIsVerified(false);
       }
     } catch (error) {
-      console.error('Error verifying ticket:', error)
-      toast.error('Failed to verify ticket')
-      setIsVerified(false)
+      console.error('Error verifying ticket:', error);
+      toast.error('Failed to verify ticket');
+      setIsVerified(false);
     } finally {
-      setIsVerifying(false)
+      setIsVerifying(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -73,7 +80,9 @@ const VerifyTicket = () => {
       <div className="bg-card p-6 rounded-lg border border-border shadow-sm mb-8">
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
-            <label htmlFor="ticketId" className="sr-only">Ticket ID</label>
+            <label htmlFor="ticketId" className="sr-only">
+              Ticket ID
+            </label>
             <input
               id="ticketId"
               type="number"
@@ -132,7 +141,9 @@ const VerifyTicket = () => {
                 </div>
                 <div className="p-4 bg-muted/30 rounded-md">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Event ID</h3>
-                  <p className="text-lg font-medium">#{verifiedTicket.metadata.eventId.toString()}</p>
+                  <p className="text-lg font-medium">
+                    #{verifiedTicket.metadata.eventId.toString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-muted/30 rounded-md">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Owner</h3>
@@ -140,15 +151,21 @@ const VerifyTicket = () => {
                 </div>
                 <div className="p-4 bg-muted/30 rounded-md">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Price</h3>
-                  <p className="text-lg font-medium">{formatPrice(verifiedTicket.metadata.price)}</p>
+                  <p className="text-lg font-medium">
+                    {formatPrice(verifiedTicket.metadata.price)}
+                  </p>
                 </div>
                 <div className="p-4 bg-muted/30 rounded-md">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Valid From</h3>
-                  <p className="text-sm font-medium">{formatDate(verifiedTicket.metadata.validFrom)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(verifiedTicket.metadata.validFrom)}
+                  </p>
                 </div>
                 <div className="p-4 bg-muted/30 rounded-md">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Valid Until</h3>
-                  <p className="text-sm font-medium">{formatDate(verifiedTicket.metadata.validUntil)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(verifiedTicket.metadata.validUntil)}
+                  </p>
                 </div>
               </div>
 
@@ -158,7 +175,8 @@ const VerifyTicket = () => {
                   <div>
                     <h4 className="font-medium text-destructive">Verification Failed</h4>
                     <p className="text-sm text-muted-foreground">
-                      This ticket is not currently valid. It may be expired, not yet active, or has been revoked.
+                      This ticket is not currently valid. It may be expired, not yet active, or has
+                      been revoked.
                     </p>
                   </div>
                 </div>
@@ -168,7 +186,7 @@ const VerifyTicket = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default VerifyTicket
+export default VerifyTicket;

@@ -32,7 +32,7 @@ const App: React.FC = () => {
     validFrom: Math.floor(Date.now() / 1000),
     validUntil: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days from now
     isTransferable: true,
-    tier: 'VIP'
+    tier: 'VIP',
   });
 
   // Simulated ticket validity check
@@ -44,13 +44,10 @@ const App: React.FC = () => {
         <Title>TicketChain</Title>
         <WalletConnection />
       </Header>
-      
+
       <main>
         <h2>Sample Ticket</h2>
-        <TicketDisplay 
-          ticket={sampleTicket} 
-          isValid={isTicketValid} 
-        />
+        <TicketDisplay ticket={sampleTicket} isValid={isTicketValid} />
       </main>
     </AppContainer>
   );

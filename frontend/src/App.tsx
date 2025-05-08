@@ -1,12 +1,12 @@
 // File: src/App.tsx
-import { Routes, Route } from 'react-router-dom'
-import { Toaster } from 'sonner'
-import { ThemeProvider } from '@/components/theme-provider'
-import Header from '@/components/Header'
-import Dashboard from '@/pages/Dashboard'
-import MintTicket from '@/pages/MintTicket'
-import VerifyTicket from '@/pages/VerifyTicket'
-import NotFound from '@/pages/NotFound'
+import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { ThemeProvider } from '@/components/theme-provider';
+import Header from '@/components/Header';
+import Dashboard from '@/pages/Dashboard';
+import MintTicket from '@/pages/MintTicket';
+import VerifyTicket from '@/pages/VerifyTicket';
+import NotFound from '@/pages/NotFound';
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
       </div>
       <Toaster position="top-right" />
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

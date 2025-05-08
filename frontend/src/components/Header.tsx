@@ -1,37 +1,37 @@
 // File: src/components/Header.tsx
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Ticket } from 'lucide-react'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { ThemeToggle } from './theme-toggle'
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Ticket } from 'lucide-react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ThemeToggle } from './theme-toggle';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const location = useLocation()
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
   // Close menu when route changes
   useEffect(() => {
-    setIsMenuOpen(false)
-  }, [location])
+    setIsMenuOpen(false);
+  }, [location]);
 
   // Close menu when window is resized to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
-        setIsMenuOpen(false)
+        setIsMenuOpen(false);
       }
-    }
-    
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Navigation links
   const navLinks = [
     { name: 'Dashboard', path: '/' },
     { name: 'Mint Ticket', path: '/mint' },
     { name: 'Verify Ticket', path: '/verify' },
-  ]
+  ];
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -39,7 +39,7 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-2">
-            <Link 
+            <Link
               to="/"
               className="flex items-center space-x-2 font-bold text-xl text-primary"
               aria-label="TicketChain Home"
@@ -56,9 +56,7 @@ const Header = () => {
                 key={link.path}
                 to={link.path}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.path
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                  location.pathname === link.path ? 'text-primary' : 'text-muted-foreground'
                 }`}
                 aria-current={location.pathname === link.path ? 'page' : undefined}
               >
@@ -95,10 +93,7 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div
-          id="mobile-menu"
-          className="md:hidden border-t border-border bg-background"
-        >
+        <div id="mobile-menu" className="md:hidden border-t border-border bg-background">
           <div className="container mx-auto px-4 py-2 space-y-2">
             {/* Mobile Navigation Links */}
             {navLinks.map((link) => (
@@ -106,23 +101,28 @@ const Header = () => {
                 key={link.path}
                 to={link.path}
                 className={`block py-2 text-base font-medium ${
-                  location.pathname === link.path
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                  location.pathname === link.path ? 'text-primary' : 'text-muted-foreground'
                 }`}
                 aria-current={location.pathname === link.path ? 'page' : undefined}
               >
                 {link.name}
               </Link>
             ))}
-            
+
             {/* Mobile Wallet Connection */}
             <div className="py-2">
               <ConnectButton.Custom>
-                {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
-                  const ready = mounted
-                  const connected = ready && account && chain
-                  
+                {({
+                  account,
+                  chain,
+                  openAccountModal,
+                  openChainModal,
+                  openConnectModal,
+                  mounted,
+                }) => {
+                  const ready = mounted;
+                  const connected = ready && account && chain;
+
                   return (
                     <div
                       {...(!ready && {
@@ -144,9 +144,9 @@ const Header = () => {
                             >
                               Connect Wallet
                             </button>
-                          )
+                          );
                         }
-                        
+
                         if (chain.unsupported) {
                           return (
                             <button
@@ -156,9 +156,9 @@ const Header = () => {
                             >
                               Wrong Network
                             </button>
-                          )
+                          );
                         }
-                        
+
                         return (
                           <button
                             onClick={openAccountModal}
@@ -167,10 +167,10 @@ const Header = () => {
                           >
                             {account.displayName}
                           </button>
-                        )
+                        );
                       })()}
                     </div>
-                  )
+                  );
                 }}
               </ConnectButton.Custom>
             </div>
@@ -178,7 +178,7 @@ const Header = () => {
         </div>
       )}
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

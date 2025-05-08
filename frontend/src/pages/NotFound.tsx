@@ -1,10 +1,10 @@
 // File: src/pages/NotFound.tsx
-import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, Home } from 'lucide-react'
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Home } from 'lucide-react';
 
 const NotFound = () => {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   return (
     <div className="max-w-md mx-auto text-center py-12">
       <AlertTriangle className="h-16 w-16 mx-auto mb-6 text-primary" />
@@ -21,7 +21,7 @@ const NotFound = () => {
         Back to Home
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default NotFound
+export default NotFound;

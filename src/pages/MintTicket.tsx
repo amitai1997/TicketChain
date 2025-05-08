@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState, useRef, useEffect } from 'react';
 
 interface SimpleDateTimePickerProps {
@@ -56,7 +55,16 @@ function formatTimeForInput(date: Date): string {
   return `${hours}:${minutes}`;
 }
 
-function SimpleDateTimePicker({ id, name, label, value, onChange, required = false, min = undefined, max = undefined }: SimpleDateTimePickerProps) {
+function SimpleDateTimePicker({
+  id,
+  name,
+  label,
+  value,
+  onChange,
+  required = false,
+  min = undefined,
+  max = undefined,
+}: SimpleDateTimePickerProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date(value));
   const [selectedDate, setSelectedDate] = useState(value);
@@ -113,8 +121,8 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
         target: {
           name,
           value: formatDateForInput(newDate),
-          type: 'datetime-local'
-        }
+          type: 'datetime-local',
+        },
       } as React.ChangeEvent<HTMLInputElement>;
       onChange(synthEvent);
     }
@@ -136,8 +144,8 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
       target: {
         name,
         value: formatDateForInput(newDate),
-        type: 'datetime-local'
-      }
+        type: 'datetime-local',
+      },
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(synthEvent);
   };
@@ -159,7 +167,8 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
         date.getDate() === today.getDate() &&
         date.getMonth() === today.getMonth() &&
         date.getFullYear() === today.getFullYear();
-      const isSelected = selectedDate &&
+      const isSelected =
+        selectedDate &&
         selectedDate.getDate() === day &&
         selectedDate.getMonth() === month &&
         selectedDate.getFullYear() === year;
@@ -181,8 +190,18 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
   };
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
@@ -296,15 +315,16 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
             </button>
           </div>
           <div className="grid grid-cols-7 gap-1 mb-1">
-            {daysOfWeek.map(day => (
-              <div key={day} className="w-7 h-7 text-xs text-center text-gray-500 dark:text-gray-400">
+            {daysOfWeek.map((day) => (
+              <div
+                key={day}
+                className="w-7 h-7 text-xs text-center text-gray-500 dark:text-gray-400"
+              >
                 {day}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1">
-            {getDaysInMonth()}
-          </div>
+          <div className="grid grid-cols-7 gap-1">{getDaysInMonth()}</div>
           <div className="mt-3 pt-2 border-t border-border flex justify-between items-center">
             <div className="flex items-center">
               <svg
@@ -346,4 +366,4 @@ function SimpleDateTimePicker({ id, name, label, value, onChange, required = fal
   );
 }
 
-export default SimpleDateTimePicker; 
+export default SimpleDateTimePicker;

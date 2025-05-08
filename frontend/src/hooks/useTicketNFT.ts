@@ -31,7 +31,7 @@ interface UseTicketNFTProps {
 
 export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
   // Get contract address from props or env
-   
+
   const [contractAddr] = useState<string>(
     contractAddress ||
       import.meta.env.VITE_CONTRACT_ADDRESS ||

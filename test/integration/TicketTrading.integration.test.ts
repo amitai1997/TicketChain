@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 
 describe('TicketNFT Trading Integration', () => {
   let ticketNFT: TicketNFT;
-   
+
   let owner: HardhatEthersSigner;
   let minter: HardhatEthersSigner;
   let buyer: HardhatEthersSigner;
@@ -48,15 +48,17 @@ describe('TicketNFT Trading Integration', () => {
     };
 
     // Mint the ticket to the buyer
-    await ticketNFT.connect(minter).mintTicket(
-      buyer.address, 
-      BigInt(1), 
-      ticketMetadata.eventId,
-      ticketMetadata.price,
-      ticketMetadata.validFrom,
-      ticketMetadata.validUntil,
-      ticketMetadata.isTransferable
-    );
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        buyer.address,
+        BigInt(1),
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
 
     // Verify ownership
     expect(await ticketNFT.ownerOf(1)).to.equal(buyer.address);
@@ -70,7 +72,9 @@ describe('TicketNFT Trading Integration', () => {
     expect(await ticketNFT.ownerOf(1)).to.equal(secondBuyer.address);
 
     // 3. Advance time to just after validFrom
-    await hre.network.provider.send('evm_setNextBlockTimestamp', [Number(ticketMetadata.validFrom) + 1]);
+    await hre.network.provider.send('evm_setNextBlockTimestamp', [
+      Number(ticketMetadata.validFrom) + 1,
+    ]);
     await hre.network.provider.send('evm_mine');
 
     // 4. Verify ticket validity
@@ -78,7 +82,9 @@ describe('TicketNFT Trading Integration', () => {
     expect(isValid).to.be.true;
 
     // 5. Advance time to just after validUntil
-    await hre.network.provider.send('evm_setNextBlockTimestamp', [Number(ticketMetadata.validUntil) + 1]);
+    await hre.network.provider.send('evm_setNextBlockTimestamp', [
+      Number(ticketMetadata.validUntil) + 1,
+    ]);
     await hre.network.provider.send('evm_mine');
 
     // 6. Verify ticket is no longer valid
@@ -94,16 +100,18 @@ describe('TicketNFT Trading Integration', () => {
     for (let i = 1; i <= 3; i++) {
       const ticketPrice = ethers.parseEther(String(0.5 * i)); // Different prices
       const isTransferable = i % 2 === 0; // Alternating transferability
-      
-      await ticketNFT.connect(minter).mintTicket(
-        buyer.address, 
-        BigInt(i), 
-        eventId,
-        ticketPrice,
-        BigInt(currentTime + 3600), 
-        BigInt(currentTime + 7200),
-        isTransferable
-      );
+
+      await ticketNFT
+        .connect(minter)
+        .mintTicket(
+          buyer.address,
+          BigInt(i),
+          eventId,
+          ticketPrice,
+          BigInt(currentTime + 3600),
+          BigInt(currentTime + 7200),
+          isTransferable
+        );
     }
 
     // Verify each ticket has the correct metadata
@@ -116,13 +124,22 @@ describe('TicketNFT Trading Integration', () => {
 
     // Try to transfer a non-transferable ticket (should fail)
     const nonTransferableTicketId = 1; // First ticket is non-transferable
-    await expect(ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, nonTransferableTicketId)) // @ts-ignore: Hardhat Chai matcher
+    await expect(
+      ticketNFT
+        .connect(buyer)
+        [
+          'safeTransferFrom(address,address,uint256)'
+        ](buyer.address, secondBuyer.address, nonTransferableTicketId)
+    ) // @ts-ignore: Hardhat Chai matcher
       .to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
 
     // Transfer a transferable ticket (should succeed)
     const transferableTicketId = 2; // Second ticket is transferable
     await ticketNFT
-      .connect(buyer)['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, transferableTicketId);
+      .connect(buyer)
+      [
+        'safeTransferFrom(address,address,uint256)'
+      ](buyer.address, secondBuyer.address, transferableTicketId);
 
     // Verify the ownership changed
     expect(await ticketNFT.ownerOf(transferableTicketId)).to.equal(secondBuyer.address);

@@ -45,13 +45,7 @@ const DisconnectButton = styled.button`
 `;
 
 export const WalletConnection: React.FC = () => {
-  const { 
-    account, 
-    isConnected, 
-    connect, 
-    disconnect, 
-    balance 
-  } = useWalletConnection();
+  const { account, isConnected, connect, disconnect, balance } = useWalletConnection();
 
   const formatAddress = (address: string): string => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -60,18 +54,14 @@ export const WalletConnection: React.FC = () => {
   return (
     <WalletContainer>
       {!isConnected ? (
-        <ConnectButton onClick={connect}>
-          Connect Wallet
-        </ConnectButton>
+        <ConnectButton onClick={connect}>Connect Wallet</ConnectButton>
       ) : (
         <>
           <AccountInfo>
             Account: {formatAddress(account || '')}
             {balance && ` | Balance: ${parseFloat(balance).toFixed(4)} MATIC`}
           </AccountInfo>
-          <DisconnectButton onClick={disconnect}>
-            Disconnect
-          </DisconnectButton>
+          <DisconnectButton onClick={disconnect}>Disconnect</DisconnectButton>
         </>
       )}
     </WalletContainer>

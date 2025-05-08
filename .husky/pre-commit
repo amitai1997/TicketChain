@@ -1,7 +1,15 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Run linters before committing
-npx solhint 'contracts/**/*.sol'
-# Run the optimized coverage script
-node scripts/run-coverage-optimized.js
+# Lint Solidity
+pnpm lint:sol || exit 1
+# Lint root JS/TS
+pnpm lint:ts || exit 1
+# Lint frontend
+pnpm --filter ./frontend lint || exit 1
+# Prettier check
+pnpm prettier --check || exit 1
+# Run all root tests
+pnpm test:all || exit 1
+# Run all frontend tests
+pnpm --filter ./frontend test || exit 1

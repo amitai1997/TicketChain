@@ -22,7 +22,7 @@ try {
     console.warn('\n⚠️  Coverage check failed, but allowing commit to proceed.');
     console.warn('   This is a temporary workaround for the "stack too deep" error.');
     console.warn('   Please fix the coverage issues before pushing to the repository.\n');
-    
+
     // Exit with status 0 to allow the commit to proceed
     process.exit(0);
   }

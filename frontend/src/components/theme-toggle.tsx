@@ -1,17 +1,17 @@
 // File: src/components/theme-toggle.tsx
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "./theme-provider"
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from './theme-provider';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
     if (theme === 'dark') {
-      setTheme('light')
+      setTheme('light');
     } else {
-      setTheme('dark')
+      setTheme('dark');
     }
-  }
+  };
 
   return (
     <button
@@ -25,5 +25,5 @@ export function ThemeToggle() {
         <Moon className="h-5 w-5" aria-hidden="true" />
       )}
     </button>
-  )
+  );
 }

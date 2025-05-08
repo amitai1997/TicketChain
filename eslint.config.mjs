@@ -16,7 +16,7 @@ export default [
       'artifacts/**',
       'cache/**',
       'typechain-types/**',
-      'frontend/dist/**'
+      'frontend/dist/**',
     ],
     languageOptions: {
       parser: tsParser,
@@ -46,8 +46,8 @@ export default [
         describe: 'readonly',
         it: 'readonly',
         beforeEach: 'readonly',
-        expect: 'readonly'
-      }
+        expect: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tseslint,

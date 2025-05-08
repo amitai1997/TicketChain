@@ -36,7 +36,17 @@ describe('TicketNFT Security and Pausability', () => {
     };
 
     await expect(
-      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable)
+      ticketNFT
+        .connect(minter)
+        .mintTicket(
+          minter.address,
+          1,
+          ticketMetadata.eventId,
+          ticketMetadata.price,
+          ticketMetadata.validFrom,
+          ticketMetadata.validUntil,
+          ticketMetadata.isTransferable
+        )
     ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 
@@ -52,8 +62,19 @@ describe('TicketNFT Security and Pausability', () => {
       isTransferable: true,
     };
 
-    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable)).to.not.be
-      .reverted;
+    await expect(
+      ticketNFT
+        .connect(minter)
+        .mintTicket(
+          minter.address,
+          1,
+          ticketMetadata.eventId,
+          ticketMetadata.price,
+          ticketMetadata.validFrom,
+          ticketMetadata.validUntil,
+          ticketMetadata.isTransferable
+        )
+    ).to.not.be.reverted;
   });
 
   it('should prevent non-pauser from pausing', async () => {
@@ -82,7 +103,17 @@ describe('TicketNFT Security and Pausability', () => {
       isTransferable: true,
     };
 
-    await ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable);
+    await ticketNFT
+      .connect(minter)
+      .mintTicket(
+        minter.address,
+        1,
+        ticketMetadata.eventId,
+        ticketMetadata.price,
+        ticketMetadata.validFrom,
+        ticketMetadata.validUntil,
+        ticketMetadata.isTransferable
+      );
     await ticketNFT.pause();
 
     const newOwner = (await ethers.getSigners())[3];

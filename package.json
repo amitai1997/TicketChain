@@ -21,7 +21,7 @@
     "lint": "solhint 'contracts/**/*.sol'",
     "lint:js": "eslint '**/*.{js,ts}'",
     "lint:sol": "solhint 'contracts/**/*.sol'",
-    "lint:ts": "eslint '**/*.{js,ts}'",
+    "lint:ts": "eslint . --ext .ts,.tsx,.js,.jsx --ignore-pattern '**/dist/*' --ignore-pattern '**/build/*' --ignore-pattern '**/node_modules/*' --ignore-pattern '**/artifacts/*' --ignore-pattern '**/cache/*' --ignore-pattern '**/coverage/*' --ignore-pattern '**/typechain-types/*'",
     "format": "prettier --write '**/*.{js,ts,sol,json,md}'",
     "format:check": "prettier --check '**/*.{js,ts,sol,json,md}'",
     "compile": "pnpm hardhat compile",

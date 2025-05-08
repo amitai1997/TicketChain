@@ -89,6 +89,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Lint JS/TS
+        run: pnpm lint:ts
+
+      - name: Lint frontend
+        run: pnpm --filter ./frontend lint
+
   test:
     needs: setup
     runs-on: ubuntu-latest
@@ -130,8 +136,11 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
-      - name: Run integration tests
-        run: pnpm test:integration
+      - name: Run all root tests
+        run: pnpm test:all
+
+      - name: Run frontend tests
+        run: pnpm --filter ./frontend test
 
   security:
     needs: setup

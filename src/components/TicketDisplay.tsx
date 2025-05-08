@@ -8,12 +8,12 @@ interface TicketDisplayProps {
 }
 
 const TicketContainer = styled.div<{ isValid: boolean }>`
-  border: 2px solid ${props => props.isValid ? '#4CAF50' : '#F44336'};
+  border: 2px solid ${(props) => (props.isValid ? '#4CAF50' : '#F44336')};
   border-radius: 8px;
   padding: 16px;
   max-width: 300px;
   margin: 16px;
-  background-color: ${props => props.isValid ? '#E8F5E9' : '#FFEBEE'};
+  background-color: ${(props) => (props.isValid ? '#E8F5E9' : '#FFEBEE')};
 `;
 
 const TicketHeader = styled.h2`
@@ -27,7 +27,7 @@ const TicketDetail = styled.p`
 `;
 
 const StatusBadge = styled.span<{ isValid: boolean }>`
-  background-color: ${props => props.isValid ? '#4CAF50' : '#F44336'};
+  background-color: ${(props) => (props.isValid ? '#4CAF50' : '#F44336')};
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -47,9 +47,7 @@ export const TicketDisplay: React.FC<TicketDisplayProps> = ({ ticket, isValid })
       <TicketDetail>Price: {ticket.price} MATIC</TicketDetail>
       <TicketDetail>Valid From: {formatDate(ticket.validFrom)}</TicketDetail>
       <TicketDetail>Valid Until: {formatDate(ticket.validUntil)}</TicketDetail>
-      <StatusBadge isValid={isValid}>
-        {isValid ? 'Valid' : 'Invalid'}
-      </StatusBadge>
+      <StatusBadge isValid={isValid}>{isValid ? 'Valid' : 'Invalid'}</StatusBadge>
     </TicketContainer>
   );
 };
