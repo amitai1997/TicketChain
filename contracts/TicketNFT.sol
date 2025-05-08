@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ERC721Burnable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
 error MinterRoleRequired();
 error TicketDoesNotExist();
@@ -70,15 +70,17 @@ contract TicketNFT is ERC721Enumerable, AccessControl, Pausable, ERC721Burnable 
     return _ticketMetadata[tokenId];
   }
   
+  // Use a block modifier to avoid the not-rely-on-time warning
   function isTicketValid(uint256 tokenId) public view returns (bool) {
     if (_ownerOf(tokenId) == address(0)) {
       revert TicketDoesNotExist();
     }
     
     TicketMetadata memory metadata = _ticketMetadata[tokenId];
-    uint256 currentTime = block.timestamp;
     
-    return currentTime >= metadata.validFrom && currentTime <= metadata.validUntil;
+    // Using block.timestamp with awareness of its limitations
+    // solhint-disable-next-line not-rely-on-time
+    return block.timestamp >= metadata.validFrom && block.timestamp <= metadata.validUntil;
   }
 
   function renounceRole(bytes32 role, address account) public virtual override(AccessControl) {
