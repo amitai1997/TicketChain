@@ -14,7 +14,8 @@ describe('EventTicket System Integration', () => {
   let blockchainTime: bigint;
 
   beforeEach(async () => {
-    const [ownerSigner, organizerSigner, minterSigner, attendee1Signer, attendee2Signer] = await hardhat.ethers.getSigners();
+    const [ownerSigner, organizerSigner, minterSigner, attendee1Signer, attendee2Signer] =
+      await hardhat.ethers.getSigners();
     owner = ownerSigner;
     organizer = organizerSigner;
     minter = minterSigner;
@@ -48,22 +49,22 @@ describe('EventTicket System Integration', () => {
 
     it('should handle multiple events with different ticket configurations', async () => {
       // Create first event
-      const event1Tx = await eventRegistry
-        .connect(organizer)
-        .createEvent(
-          blockchainTime + 86400n, // 1 day from now
-          blockchainTime + 172800n, // 2 days from now
-          'ipfs://QmEvent1'
-        );
-      
+      const event1Tx = await eventRegistry.connect(organizer).createEvent(
+        blockchainTime + 86400n, // 1 day from now
+        blockchainTime + 172800n, // 2 days from now
+        'ipfs://QmEvent1'
+      );
+
       const receipt1 = await event1Tx.wait();
       let event1Id: bigint;
-      
+
       if (receipt1 && receipt1.logs) {
         const eventCreatedLog = receipt1.logs.find(
-          (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+          (log) =>
+            log.topics[0] ===
+            hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
         );
-        
+
         if (eventCreatedLog) {
           event1Id = BigInt(eventCreatedLog.topics[1]);
         } else {
@@ -74,22 +75,22 @@ describe('EventTicket System Integration', () => {
       }
 
       // Create second event
-      const event2Tx = await eventRegistry
-        .connect(organizer)
-        .createEvent(
-          blockchainTime + 259200n, // 3 days from now
-          blockchainTime + 345600n, // 4 days from now
-          'ipfs://QmEvent2'
-        );
-      
+      const event2Tx = await eventRegistry.connect(organizer).createEvent(
+        blockchainTime + 259200n, // 3 days from now
+        blockchainTime + 345600n, // 4 days from now
+        'ipfs://QmEvent2'
+      );
+
       const receipt2 = await event2Tx.wait();
       let event2Id: bigint;
-      
+
       if (receipt2 && receipt2.logs) {
         const eventCreatedLog = receipt2.logs.find(
-          (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+          (log) =>
+            log.topics[0] ===
+            hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
         );
-        
+
         if (eventCreatedLog) {
           event2Id = BigInt(eventCreatedLog.topics[1]);
         } else {
@@ -156,7 +157,7 @@ describe('EventTicket System Integration', () => {
       await eventTicket
         .connect(attendee1)
         ['safeTransferFrom(address,address,uint256)'](attendee1.address, minter.address, 1);
-      
+
       expect(await eventTicket.ownerOf(1)).to.equal(minter.address);
 
       // Test transferability for second event's tickets (should fail)
@@ -195,20 +196,18 @@ describe('EventTicket System Integration', () => {
       // Create an event
       const createEventTx = await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 86400n,
-          blockchainTime + 172800n,
-          'ipfs://QmEventBatch'
-        );
-      
+        .createEvent(blockchainTime + 86400n, blockchainTime + 172800n, 'ipfs://QmEventBatch');
+
       const receipt = await createEventTx.wait();
       let eventId: bigint;
-      
+
       if (receipt && receipt.logs) {
         const eventCreatedLog = receipt.logs.find(
-          (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+          (log) =>
+            log.topics[0] ===
+            hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
         );
-        
+
         if (eventCreatedLog) {
           eventId = BigInt(eventCreatedLog.topics[1]);
         } else {
@@ -224,7 +223,7 @@ describe('EventTicket System Integration', () => {
         attendee2.address,
         organizer.address,
         minter.address,
-        owner.address
+        owner.address,
       ];
 
       // Batch mint tickets

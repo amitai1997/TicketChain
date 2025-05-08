@@ -14,7 +14,7 @@ async function main() {
   const EventRegistry = await ethers.getContractFactory('EventRegistry');
   const eventRegistry = await EventRegistry.deploy();
   await eventRegistry.waitForDeployment();
-  
+
   const eventRegistryAddress = await eventRegistry.getAddress();
   console.log(`EventRegistry deployed to: ${eventRegistryAddress}`);
 
@@ -23,7 +23,7 @@ async function main() {
   const EventTicket = await ethers.getContractFactory('EventTicket');
   const eventTicket = await EventTicket.deploy(eventRegistryAddress);
   await eventTicket.waitForDeployment();
-  
+
   const eventTicketAddress = await eventTicket.getAddress();
   console.log(`EventTicket deployed to: ${eventTicketAddress}`);
 
@@ -63,7 +63,9 @@ async function main() {
     JSON.stringify(deploymentInfo, null, 2)
   );
 
-  console.log(`Deployment information saved to: ${path.join(deploymentDir, `${network}-deployment.json`)}`);
+  console.log(
+    `Deployment information saved to: ${path.join(deploymentDir, `${network}-deployment.json`)}`
+  );
   console.log('Deployment complete!');
 }
 

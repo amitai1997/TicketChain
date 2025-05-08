@@ -14,7 +14,8 @@ describe('EventTicket', () => {
   let blockchainTime: bigint;
 
   beforeEach(async () => {
-    const [ownerSigner, organizerSigner, minterSigner, attendeeSigner] = await hardhat.ethers.getSigners();
+    const [ownerSigner, organizerSigner, minterSigner, attendeeSigner] =
+      await hardhat.ethers.getSigners();
     owner = ownerSigner;
     organizer = organizerSigner;
     minter = minterSigner;
@@ -39,22 +40,22 @@ describe('EventTicket', () => {
     const latestBlock = await hardhat.ethers.provider.getBlock('latest');
     blockchainTime = BigInt(latestBlock?.timestamp || Math.floor(Date.now() / 1000));
 
-    const tx = await eventRegistry
-      .connect(organizer)
-      .createEvent(
-        blockchainTime + 3600n, // 1 hour from blockchain time
-        blockchainTime + 14400n, // 4 hours from blockchain time
-        'ipfs://QmEvent1'
-      );
+    const tx = await eventRegistry.connect(organizer).createEvent(
+      blockchainTime + 3600n, // 1 hour from blockchain time
+      blockchainTime + 14400n, // 4 hours from blockchain time
+      'ipfs://QmEvent1'
+    );
 
     // Get event ID from the transaction receipt logs
     const receipt = await tx.wait();
     if (receipt && receipt.logs) {
       // Find the EventCreated event and extract eventId
       const eventCreatedLog = receipt.logs.find(
-        (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+        (log) =>
+          log.topics[0] ===
+          hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
       );
-      
+
       if (eventCreatedLog) {
         // Extract eventId (first indexed parameter)
         eventId = BigInt(eventCreatedLog.topics[1]);
@@ -163,30 +164,26 @@ describe('EventTicket', () => {
     it('should fail to mint a ticket with time range outside event time range', async () => {
       // Before event start
       await expect(
-        eventTicket
-          .connect(minter)
-          .mintTicketForEvent(
-            attendee.address,
-            eventId,
-            hardhat.ethers.parseEther('0.5'),
-            blockchainTime + 1000n, // Before event start (3600n)
-            blockchainTime + 5000n,
-            true
-          )
+        eventTicket.connect(minter).mintTicketForEvent(
+          attendee.address,
+          eventId,
+          hardhat.ethers.parseEther('0.5'),
+          blockchainTime + 1000n, // Before event start (3600n)
+          blockchainTime + 5000n,
+          true
+        )
       ).to.be.revertedWithCustomError(eventTicket, 'EventTimeConstraintViolation');
 
       // After event end
       await expect(
-        eventTicket
-          .connect(minter)
-          .mintTicketForEvent(
-            attendee.address,
-            eventId,
-            hardhat.ethers.parseEther('0.5'),
-            blockchainTime + 4000n,
-            blockchainTime + 18000n, // After event end (14400n)
-            true
-          )
+        eventTicket.connect(minter).mintTicketForEvent(
+          attendee.address,
+          eventId,
+          hardhat.ethers.parseEther('0.5'),
+          blockchainTime + 4000n,
+          blockchainTime + 18000n, // After event end (14400n)
+          true
+        )
       ).to.be.revertedWithCustomError(eventTicket, 'EventTimeConstraintViolation');
     });
 
@@ -233,11 +230,7 @@ describe('EventTicket', () => {
     });
 
     it('should mint multiple tickets in batch', async () => {
-      const recipients = [
-        attendee.address,
-        minter.address,
-        organizer.address,
-      ];
+      const recipients = [attendee.address, minter.address, organizer.address];
 
       const ticketMetadata = {
         price: hardhat.ethers.parseEther('0.5'),
@@ -345,21 +338,19 @@ describe('EventTicket', () => {
       // Create another event
       const tx = await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 20000n,
-          blockchainTime + 30000n,
-          'ipfs://QmEvent2'
-        );
-      
+        .createEvent(blockchainTime + 20000n, blockchainTime + 30000n, 'ipfs://QmEvent2');
+
       const receipt = await tx.wait();
       if (receipt && receipt.logs) {
         const eventCreatedLog = receipt.logs.find(
-          (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+          (log) =>
+            log.topics[0] ===
+            hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
         );
-        
+
         if (eventCreatedLog) {
           const newEventId = BigInt(eventCreatedLog.topics[1]);
-          
+
           // Mint a ticket for the new event
           await eventTicket
             .connect(minter)
@@ -371,11 +362,11 @@ describe('EventTicket', () => {
               blockchainTime + 29000n,
               true
             );
-          
+
           // Should be only 3 tickets for the first event still
           const originalEventTickets = await eventTicket.getTicketsForEvent(eventId);
           expect(originalEventTickets.length).to.equal(3);
-          
+
           // Should be 1 ticket for the new event
           const newEventTickets = await eventTicket.getTicketsForEvent(newEventId);
           expect(newEventTickets.length).to.equal(1);
@@ -388,37 +379,32 @@ describe('EventTicket', () => {
   describe('Ticket Transfers', () => {
     beforeEach(async () => {
       // Mint tickets for testing
-      await eventTicket
-        .connect(minter)
-        .mintTicketForEvent(
-          attendee.address,
-          eventId,
-          hardhat.ethers.parseEther('0.5'),
-          blockchainTime + 4000n,
-          blockchainTime + 12000n,
-          true // Transferable
-        );
+      await eventTicket.connect(minter).mintTicketForEvent(
+        attendee.address,
+        eventId,
+        hardhat.ethers.parseEther('0.5'),
+        blockchainTime + 4000n,
+        blockchainTime + 12000n,
+        true // Transferable
+      );
 
-      await eventTicket
-        .connect(minter)
-        .mintTicketForEvent(
-          attendee.address,
-          eventId,
-          hardhat.ethers.parseEther('0.5'),
-          blockchainTime + 4000n,
-          blockchainTime + 12000n,
-          false // Non-transferable
-        );
+      await eventTicket.connect(minter).mintTicketForEvent(
+        attendee.address,
+        eventId,
+        hardhat.ethers.parseEther('0.5'),
+        blockchainTime + 4000n,
+        blockchainTime + 12000n,
+        false // Non-transferable
+      );
     });
 
     it('should allow transferring a transferable ticket', async () => {
       const recipient = organizer.address;
       const transferMethod = 'safeTransferFrom(address,address,uint256)';
-      
-      await expect(
-        eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)
-      ).to.not.be.reverted;
-      
+
+      await expect(eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)).to
+        .not.be.reverted;
+
       // Verify new owner
       expect(await eventTicket.ownerOf(1)).to.equal(recipient);
     });
@@ -426,7 +412,7 @@ describe('EventTicket', () => {
     it('should prevent transferring a non-transferable ticket', async () => {
       const recipient = organizer.address;
       const transferMethod = 'safeTransferFrom(address,address,uint256)';
-      
+
       await expect(
         eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 2)
       ).to.be.revertedWithCustomError(eventTicket, 'TicketNotTransferable');
@@ -435,21 +421,19 @@ describe('EventTicket', () => {
     it('should prevent transfers when contract is paused', async () => {
       // Pause the contract
       await eventTicket.connect(owner).pause();
-      
+
       const recipient = organizer.address;
       const transferMethod = 'safeTransferFrom(address,address,uint256)';
-      
-      await expect(
-        eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)
-      ).to.be.reverted; // With "Pausable: paused" error
-      
+
+      await expect(eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)).to
+        .be.reverted; // With "Pausable: paused" error
+
       // Unpause and try again
       await eventTicket.connect(owner).unpause();
-      
-      await expect(
-        eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)
-      ).to.not.be.reverted;
-      
+
+      await expect(eventTicket.connect(attendee)[transferMethod](attendee.address, recipient, 1)).to
+        .not.be.reverted;
+
       // Verify new owner
       expect(await eventTicket.ownerOf(1)).to.equal(recipient);
     });
@@ -485,13 +469,13 @@ describe('EventTicket', () => {
     it('should clean up metadata and tracking when burning a ticket', async () => {
       // Note the total supply before burning
       expect(await eventTicket.totalSupply()).to.equal(1);
-      
+
       // Burn the ticket
       await eventTicket.connect(attendee).burn(1);
-      
+
       // Check that total supply is updated
       expect(await eventTicket.totalSupply()).to.equal(0);
-      
+
       // Check that the ticket is not in event tickets
       const eventTickets = await eventTicket.getTicketsForEvent(eventId);
       expect(eventTickets.length).to.equal(0);
@@ -516,24 +500,24 @@ describe('EventTicket', () => {
           blockchainTime + 12000n,
           true
         );
-      
+
       // Fast forward to within valid period
       const validTimestamp = Number(blockchainTime) + 5000;
       await hardhat.ethers.provider.send('evm_setNextBlockTimestamp', [validTimestamp]);
       await hardhat.ethers.provider.send('evm_mine');
-      
+
       // Ticket should be valid
       expect(await eventTicket.isTicketValid(1)).to.be.true;
-      
+
       // Deactivate the event
       await eventRegistry.connect(organizer).setEventStatus(eventId, false);
-      
+
       // Ticket should now be invalid
       expect(await eventTicket.isTicketValid(1)).to.be.false;
-      
+
       // Reactivate the event
       await eventRegistry.connect(organizer).setEventStatus(eventId, true);
-      
+
       // Ticket should be valid again
       expect(await eventTicket.isTicketValid(1)).to.be.true;
     });
@@ -542,56 +526,50 @@ describe('EventTicket', () => {
       // Create another event
       const tx = await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 20000n,
-          blockchainTime + 30000n,
-          'ipfs://QmEvent2'
-        );
-      
+        .createEvent(blockchainTime + 20000n, blockchainTime + 30000n, 'ipfs://QmEvent2');
+
       const receipt = await tx.wait();
       if (receipt && receipt.logs) {
         const eventCreatedLog = receipt.logs.find(
-          (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+          (log) =>
+            log.topics[0] ===
+            hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
         );
-        
+
         if (eventCreatedLog) {
           const newEventId = BigInt(eventCreatedLog.topics[1]);
-          
+
           // Mint tickets for both events
-          await eventTicket
-            .connect(minter)
-            .mintTicketForEvent(
-              attendee.address,
-              eventId, // First event
-              hardhat.ethers.parseEther('0.5'),
-              blockchainTime + 4000n,
-              blockchainTime + 12000n,
-              true
-            );
-          
-          await eventTicket
-            .connect(minter)
-            .mintTicketForEvent(
-              attendee.address,
-              newEventId, // Second event
-              hardhat.ethers.parseEther('1.0'),
-              blockchainTime + 21000n,
-              blockchainTime + 29000n,
-              true
-            );
-          
+          await eventTicket.connect(minter).mintTicketForEvent(
+            attendee.address,
+            eventId, // First event
+            hardhat.ethers.parseEther('0.5'),
+            blockchainTime + 4000n,
+            blockchainTime + 12000n,
+            true
+          );
+
+          await eventTicket.connect(minter).mintTicketForEvent(
+            attendee.address,
+            newEventId, // Second event
+            hardhat.ethers.parseEther('1.0'),
+            blockchainTime + 21000n,
+            blockchainTime + 29000n,
+            true
+          );
+
           // Verify ticket metadata for both tickets
           const ticket1 = await eventTicket.getTicketMetadata(1);
           expect(ticket1.eventId).to.equal(eventId);
-          
+
           const ticket2 = await eventTicket.getTicketMetadata(2);
           expect(ticket2.eventId).to.equal(newEventId);
-          
+
           // Get tickets for each event
           const event1Tickets = await eventTicket.getTicketsForEvent(eventId);
           expect(event1Tickets.length).to.equal(1);
           expect(event1Tickets[0]).to.equal(1n);
-          
+
           const event2Tickets = await eventTicket.getTicketsForEvent(newEventId);
           expect(event2Tickets.length).to.equal(1);
           expect(event2Tickets[0]).to.equal(2n);

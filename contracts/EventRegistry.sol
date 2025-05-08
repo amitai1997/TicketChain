@@ -122,8 +122,7 @@ contract EventRegistry is IEventRegistry, AccessControl, Pausable {
 
     // Only the organizer or admin can update the event
     if (
-      _eventMetadata[eventId].organizer != msg.sender &&
-      !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
+      _eventMetadata[eventId].organizer != msg.sender && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
     ) {
       revert EventOrganizerRoleRequired();
     }
@@ -150,8 +149,7 @@ contract EventRegistry is IEventRegistry, AccessControl, Pausable {
 
     // Only the organizer or admin can update the event status
     if (
-      _eventMetadata[eventId].organizer != msg.sender &&
-      !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
+      _eventMetadata[eventId].organizer != msg.sender && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
     ) {
       revert EventOrganizerRoleRequired();
     }

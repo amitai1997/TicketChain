@@ -42,20 +42,20 @@ describe('Ticket Trading Integration', () => {
     await eventTicket.grantRole(MINTER_ROLE, minter.address);
 
     // Create an event
-    const createEventTx = await eventRegistry
-      .connect(organizer)
-      .createEvent(
-        blockchainTime + 86400n, // 1 day from now
-        blockchainTime + 172800n, // 2 days from now
-        'ipfs://QmEventForTrading'
-      );
+    const createEventTx = await eventRegistry.connect(organizer).createEvent(
+      blockchainTime + 86400n, // 1 day from now
+      blockchainTime + 172800n, // 2 days from now
+      'ipfs://QmEventForTrading'
+    );
 
     const receipt = await createEventTx.wait();
     if (receipt && receipt.logs) {
       const eventCreatedLog = receipt.logs.find(
-        (log) => log.topics[0] === hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
+        (log) =>
+          log.topics[0] ===
+          hardhat.ethers.id('EventCreated(uint256,address,uint256,uint256,string)')
       );
-      
+
       if (eventCreatedLog) {
         eventId = BigInt(eventCreatedLog.topics[1]);
       } else {
@@ -149,14 +149,18 @@ describe('Ticket Trading Integration', () => {
     await expect(
       eventTicket
         .connect(buyer)
-        ['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, nonTransferableTicketId)
+        [
+          'safeTransferFrom(address,address,uint256)'
+        ](buyer.address, secondBuyer.address, nonTransferableTicketId)
     ).to.be.revertedWithCustomError(eventTicket, 'TicketNotTransferable');
 
     // Transfer a transferable ticket (should succeed)
     const transferableTicketId = 2; // Second ticket is transferable
     await eventTicket
       .connect(buyer)
-      ['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, transferableTicketId);
+      [
+        'safeTransferFrom(address,address,uint256)'
+      ](buyer.address, secondBuyer.address, transferableTicketId);
 
     // Verify the ownership changed
     expect(await eventTicket.ownerOf(transferableTicketId)).to.equal(secondBuyer.address);

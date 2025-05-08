@@ -68,11 +68,7 @@ describe('EventRegistry', () => {
       await expect(
         eventRegistry
           .connect(attendee)
-          .createEvent(
-            blockchainTime + 3600n,
-            blockchainTime + 7200n,
-            'ipfs://QmEvent1'
-          )
+          .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1')
       ).to.be.revertedWithCustomError(eventRegistry, 'EventOrganizerRoleRequired');
     });
 
@@ -82,24 +78,20 @@ describe('EventRegistry', () => {
 
       // End time before start time
       await expect(
-        eventRegistry
-          .connect(organizer)
-          .createEvent(
-            blockchainTime + 7200n, // 2 hours from blockchain time (start)
-            blockchainTime + 3600n, // 1 hour from blockchain time (end)
-            'ipfs://QmEvent1'
-          )
+        eventRegistry.connect(organizer).createEvent(
+          blockchainTime + 7200n, // 2 hours from blockchain time (start)
+          blockchainTime + 3600n, // 1 hour from blockchain time (end)
+          'ipfs://QmEvent1'
+        )
       ).to.be.revertedWithCustomError(eventRegistry, 'InvalidEventTimeRange');
 
       // End time equal to start time
       await expect(
-        eventRegistry
-          .connect(organizer)
-          .createEvent(
-            blockchainTime + 3600n, // 1 hour from blockchain time
-            blockchainTime + 3600n, // Same as start time
-            'ipfs://QmEvent1'
-          )
+        eventRegistry.connect(organizer).createEvent(
+          blockchainTime + 3600n, // 1 hour from blockchain time
+          blockchainTime + 3600n, // Same as start time
+          'ipfs://QmEvent1'
+        )
       ).to.be.revertedWithCustomError(eventRegistry, 'InvalidEventTimeRange');
     });
 
@@ -110,11 +102,7 @@ describe('EventRegistry', () => {
       // Create event first
       await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 3600n,
-          blockchainTime + 7200n,
-          'ipfs://QmEvent1'
-        );
+        .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1');
 
       // Update the event
       const updatedEventData = {
@@ -124,14 +112,12 @@ describe('EventRegistry', () => {
       };
 
       await expect(
-        eventRegistry
-          .connect(organizer)
-          .updateEvent(
-            1, // First event ID
-            updatedEventData.startTime,
-            updatedEventData.endTime,
-            updatedEventData.metadataURI
-          )
+        eventRegistry.connect(organizer).updateEvent(
+          1, // First event ID
+          updatedEventData.startTime,
+          updatedEventData.endTime,
+          updatedEventData.metadataURI
+        )
       )
         .to.emit(eventRegistry, 'EventUpdated')
         .withArgs(
@@ -157,22 +143,16 @@ describe('EventRegistry', () => {
       // Create event first
       await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 3600n,
-          blockchainTime + 7200n,
-          'ipfs://QmEvent1'
-        );
+        .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1');
 
       // Try to update the event as non-organizer
       await expect(
-        eventRegistry
-          .connect(attendee)
-          .updateEvent(
-            1, // First event ID
-            blockchainTime + 4000n,
-            blockchainTime + 8000n,
-            'ipfs://QmEvent1Updated'
-          )
+        eventRegistry.connect(attendee).updateEvent(
+          1, // First event ID
+          blockchainTime + 4000n,
+          blockchainTime + 8000n,
+          'ipfs://QmEvent1Updated'
+        )
       ).to.be.revertedWithCustomError(eventRegistry, 'EventOrganizerRoleRequired');
     });
 
@@ -183,11 +163,7 @@ describe('EventRegistry', () => {
       // Create event first
       await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 3600n,
-          blockchainTime + 7200n,
-          'ipfs://QmEvent1'
-        );
+        .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1');
 
       // Deactivate the event
       await expect(eventRegistry.connect(organizer).setEventStatus(1, false))
@@ -215,11 +191,7 @@ describe('EventRegistry', () => {
       // Create event first
       await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 3600n,
-          blockchainTime + 7200n,
-          'ipfs://QmEvent1'
-        );
+        .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1');
 
       // Try to change status as non-organizer
       await expect(
@@ -237,19 +209,13 @@ describe('EventRegistry', () => {
       // Create multiple events
       await eventRegistry
         .connect(organizer)
-        .createEvent(
-          blockchainTime + 3600n,
-          blockchainTime + 7200n,
-          'ipfs://QmEvent1'
-        );
+        .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1');
 
-      await eventRegistry
-        .connect(organizer)
-        .createEvent(
-          blockchainTime + 10800n, // 3 hours from blockchain time
-          blockchainTime + 14400n, // 4 hours from blockchain time
-          'ipfs://QmEvent2'
-        );
+      await eventRegistry.connect(organizer).createEvent(
+        blockchainTime + 10800n, // 3 hours from blockchain time
+        blockchainTime + 14400n, // 4 hours from blockchain time
+        'ipfs://QmEvent2'
+      );
     });
 
     it('should correctly retrieve event metadata', async () => {
@@ -315,11 +281,7 @@ describe('EventRegistry', () => {
       await expect(
         eventRegistry
           .connect(organizer)
-          .createEvent(
-            blockchainTime + 3600n,
-            blockchainTime + 7200n,
-            'ipfs://QmEvent1'
-          )
+          .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1')
       ).to.be.reverted; // With "Pausable: paused" error
 
       // Unpause the contract
@@ -329,11 +291,7 @@ describe('EventRegistry', () => {
       await expect(
         eventRegistry
           .connect(organizer)
-          .createEvent(
-            blockchainTime + 3600n,
-            blockchainTime + 7200n,
-            'ipfs://QmEvent1'
-          )
+          .createEvent(blockchainTime + 3600n, blockchainTime + 7200n, 'ipfs://QmEvent1')
       ).to.not.be.reverted;
     });
 

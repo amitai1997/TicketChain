@@ -38,7 +38,7 @@ describe('TicketNFT Coverage Test', function () {
     // Get current time from the blockchain for validity period
     const latestBlock = await hre.ethers.provider.getBlock('latest');
     const currentTime = latestBlock?.timestamp || Math.floor(Date.now() / 1000);
-    
+
     // Set validity period to start now and end in future
     VALID_FROM = currentTime;
     VALID_UNTIL = currentTime + 86400; // 1 day later

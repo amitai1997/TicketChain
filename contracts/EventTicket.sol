@@ -114,15 +114,14 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
     } catch {
       revert EventDoesNotExistOrInactive();
     }
-
     // Get event metadata to validate time constraints
     EventMetadata memory eventData = eventRegistry.getEventMetadata(eventId);
-    
+
     // Validate ticket time range within event time range
     if (validFrom < eventData.startTime || validUntil > eventData.endTime) {
       revert EventTimeConstraintViolation();
     }
-    
+
     if (validFrom >= validUntil) {
       revert InvalidTicketTimeRange();
     }
@@ -169,7 +168,6 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
     } catch {
       revert EventDoesNotExistOrInactive();
     }
-
     // The organizer can mint tickets for their own events without needing explicit MINTER_ROLE
     // Override the minter role check by calling our own internal implementation
     return _mintOrganizerTicket(to, eventId, price, validFrom, validUntil, isTransferable);
@@ -195,15 +193,14 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
     } catch {
       revert EventDoesNotExistOrInactive();
     }
-
     // Get event metadata to validate time constraints
     EventMetadata memory eventData = eventRegistry.getEventMetadata(eventId);
-    
+
     // Validate ticket time range within event time range
     if (validFrom < eventData.startTime || validUntil > eventData.endTime) {
       revert EventTimeConstraintViolation();
     }
-    
+
     if (validFrom >= validUntil) {
       revert InvalidTicketTimeRange();
     }
@@ -254,7 +251,14 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
 
     uint256[] memory tokenIds = new uint256[](to.length);
     for (uint256 i = 0; i < to.length; i++) {
-      tokenIds[i] = mintTicketForEvent(to[i], eventId, price, validFrom, validUntil, isTransferable);
+      tokenIds[i] = mintTicketForEvent(
+        to[i],
+        eventId,
+        price,
+        validFrom,
+        validUntil,
+        isTransferable
+      );
     }
     return tokenIds;
   }
@@ -270,11 +274,9 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
   /**
    * @dev Get both ticket and related event metadata in one call
    */
-  function getTicketWithEventMetadata(uint256 tokenId) 
-    public 
-    view
-    returns (TicketMetadata memory ticket, EventMetadata memory event_) 
-  {
+  function getTicketWithEventMetadata(
+    uint256 tokenId
+  ) public view returns (TicketMetadata memory ticket, EventMetadata memory event_) {
     ticket = getTicketMetadata(tokenId);
     event_ = eventRegistry.getEventMetadata(ticket.eventId);
     return (ticket, event_);
@@ -287,7 +289,7 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
     }
 
     TicketMetadata memory metadata = _ticketMetadata[tokenId];
-    
+
     // Check if the associated event is active
     bool eventActive;
     try eventRegistry.isEventActive(metadata.eventId) returns (bool isActive) {
@@ -295,15 +297,12 @@ contract EventTicket is ERC721, AccessControl, Pausable, ERC721Burnable {
     } catch {
       eventActive = false;
     }
-    
     // Check ticket validity time range
-    bool ticketInValidTimeRange = (
+    bool ticketInValidTimeRange = (// solhint-disable-next-line not-rely-on-time
+    block.timestamp >= metadata.validFrom &&
       // solhint-disable-next-line not-rely-on-time
-      block.timestamp >= metadata.validFrom && 
-      // solhint-disable-next-line not-rely-on-time
-      block.timestamp <= metadata.validUntil
-    );
-    
+      block.timestamp <= metadata.validUntil);
+
     return eventActive && ticketInValidTimeRange;
   }
 
