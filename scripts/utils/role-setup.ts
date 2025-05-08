@@ -1,12 +1,12 @@
-import { ethers } from 'hardhat';
+import hre from 'hardhat';
 
 export async function setupMinterRole(contractAddress: string): Promise<void> {
-  const [deployer] = await ethers.getSigners();
+  const [deployer] = await hre.ethers.getSigners();
 
-  const TicketNFT = await ethers.getContractFactory('TicketNFT');
+  const TicketNFT = await hre.ethers.getContractFactory('TicketNFT');
   const ticketNFT = TicketNFT.attach(contractAddress);
 
-  // Typescript requires explicit conversion for keccak256
+  // Get the MINTER_ROLE
   const MINTER_ROLE = await ticketNFT.MINTER_ROLE();
 
   // Check if deployer already has the minter role
