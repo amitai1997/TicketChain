@@ -6,10 +6,7 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ERC721Burnable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-/**
- * @title TicketMetadata
- * @dev Struct for storing ticket metadata, moved outside the contract to reduce stack depth
- */
+// Struct defined outside the contract to reduce stack usage
 struct TicketMetadata {
     uint256 eventId;
     uint256 price;
@@ -18,7 +15,7 @@ struct TicketMetadata {
     bool isTransferable;
 }
 
-// Custom errors to save gas and reduce stack usage
+// Custom errors to save gas and improve stack management
 error MinterRoleRequired();
 error TicketDoesNotExist();
 error PauserRoleRequired();
@@ -29,31 +26,27 @@ error CannotRenounceAdminRole();
 
 /**
  * @title TicketNFT
- * @dev Simplified NFT contract for tickets, avoiding stack too deep errors
+ * @dev NFT contract for event tickets with transferability control
+ * Optimized for coverage testing by reducing stack depth
  */
 contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
+    // Role identifiers
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // Storage for ticket metadata
     mapping(uint256 => TicketMetadata) private _ticketMetadata;
     
-    // Basic enumeration storage - minimized to reduce complexity
-    mapping(address => uint256[]) private _ownedTokens;
+    // Simple token tracking for enumeration
     uint256[] private _allTokens;
 
-    /**
-     * @dev Initializes the contract with roles
-     */
     constructor() ERC721("TicketChain", "TCKT") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
     }
 
-    /**
-     * @dev Pauses token transfers
-     */
+    // Pause functionalities
     function pause() public {
         if (!hasRole(PAUSER_ROLE, msg.sender)) {
             revert PauserRoleRequired();
@@ -61,9 +54,6 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
         _pause();
     }
 
-    /**
-     * @dev Unpauses token transfers
-     */
     function unpause() public {
         if (!hasRole(PAUSER_ROLE, msg.sender)) {
             revert PauserRoleRequired();
@@ -71,29 +61,54 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
         _unpause();
     }
 
-    /**
-     * @dev Mints a new ticket NFT
-     */
-    function mintTicket(address to, uint256 tokenId, TicketMetadata calldata metadata) public {
+    // Token minting with metadata
+    function mintTicket(
+        address to, 
+        uint256 tokenId, 
+        uint256 eventId,
+        uint256 price,
+        uint256 validFrom,
+        uint256 validUntil,
+        bool isTransferable
+    ) public {
+        // Split function to reduce stack usage
+        _validateAndMint(to, tokenId, eventId, price, validFrom, validUntil, isTransferable);
+    }
+
+    // Internal function to validate and mint - split to reduce stack depth
+    function _validateAndMint(
+        address to,
+        uint256 tokenId,
+        uint256 eventId,
+        uint256 price,
+        uint256 validFrom,
+        uint256 validUntil,
+        bool isTransferable
+    ) internal {
         if (!hasRole(MINTER_ROLE, msg.sender)) {
             revert MinterRoleRequired();
         }
         
-        if (metadata.validFrom >= metadata.validUntil) {
+        if (validFrom >= validUntil) {
             revert InvalidTicketTimeRange();
         }
 
         _safeMint(to, tokenId);
-        _ticketMetadata[tokenId] = metadata;
         
-        // Simplified enumeration tracking
-        _ownedTokens[to].push(tokenId);
+        // Create and store metadata
+        TicketMetadata memory metadata = TicketMetadata({
+            eventId: eventId,
+            price: price,
+            validFrom: validFrom,
+            validUntil: validUntil,
+            isTransferable: isTransferable
+        });
+        
+        _ticketMetadata[tokenId] = metadata;
         _allTokens.push(tokenId);
     }
 
-    /**
-     * @dev Gets metadata for a ticket
-     */
+    // Metadata getter
     function getTicketMetadata(uint256 tokenId) public view returns (TicketMetadata memory) {
         if (_ownerOf(tokenId) == address(0)) {
             revert TicketDoesNotExist();
@@ -101,9 +116,7 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
         return _ticketMetadata[tokenId];
     }
     
-    /**
-     * @dev Checks if a ticket is temporally valid
-     */
+    // Validity check
     function isTicketValid(uint256 tokenId) public view returns (bool) {
         if (_ownerOf(tokenId) == address(0)) {
             revert TicketDoesNotExist();
@@ -114,9 +127,7 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
         return block.timestamp >= metadata.validFrom && block.timestamp <= metadata.validUntil;
     }
     
-    /**
-     * @dev Prevent admin from renouncing their role
-     */
+    // Security check for admin role
     function renounceRole(bytes32 role, address account) public override(AccessControl) {
         if (role == DEFAULT_ADMIN_ROLE && account == msg.sender) {
             revert CannotRenounceAdminRole();
@@ -124,119 +135,69 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
         super.renounceRole(role, account);
     }
 
-    /**
-     * @dev Support multiple interface checks
-     */
     function supportsInterface(bytes4 interfaceId) public view override(ERC721, AccessControl) returns (bool) {
         return ERC721.supportsInterface(interfaceId) || AccessControl.supportsInterface(interfaceId);
     }
 
-    /**
-     * @dev Gets tokens owned by a specific address (simple implementation)
-     * This is a non-standard implementation that doesn't follow ERC721Enumerable
-     * but provides similar functionality with lower complexity
-     */
-    function tokensOfOwner(address owner) public view returns (uint256[] memory) {
-        return _ownedTokens[owner];
-    }
-    
-    /**
-     * @dev Gets total supply of tokens
-     */
+    // Basic enumeration
     function totalSupply() public view returns (uint256) {
         return _allTokens.length;
     }
     
-    /**
-     * @dev Gets all tokens (use with caution as array may grow large)
-     */
-    function allTokens() public view returns (uint256[] memory) {
-        return _allTokens;
+    function tokenByIndex(uint256 index) public view returns (uint256) {
+        require(index < totalSupply(), "Index out of bounds");
+        return _allTokens[index];
     }
 
-    /**
-     * @dev Override transfer function to enforce restrictions
-     * Simplified implementation to avoid stack too deep errors
-     */
+    // Transfer logic - override _update to implement transferability check
     function _update(
         address to,
         uint256 tokenId,
         address auth
     ) internal override whenNotPaused returns (address) {
-        address from = _ownerOf(tokenId);
-        
-        // Check if the contract is paused
-        if (paused()) {
-            revert ContractPaused();
+        // Split logic to reduce stack depth
+        bool canTransfer = _checkTransferability(tokenId);
+        if (!canTransfer) {
+            revert TicketNotTransferable();
         }
         
-        // Only check transferability for actual transfers (not mints or burns)
-        if (from != address(0) && to != address(0)) {
-            // Check if the ticket is transferable
-            if (!_ticketMetadata[tokenId].isTransferable) {
-                revert TicketNotTransferable();
-            }
-        }
+        address from = super._update(to, tokenId, auth);
         
-        // Call parent implementation
-        address updatedFrom = super._update(to, tokenId, auth);
-        
-        // Update the enumeration mappings
-        _updateTokenOwnership(updatedFrom, to, tokenId);
-        
-        return updatedFrom;
-    }
-    
-    /**
-     * @dev Updates token ownership in the enumeration mappings
-     * Separated from _update to reduce stack usage
-     */
-    function _updateTokenOwnership(address from, address to, uint256 tokenId) private {
-        if (from != address(0)) {
-            // Remove from old owner
-            _removeTokenFromOwner(from, tokenId);
-        }
-        
-        if (to != address(0)) {
-            // Add to new owner
-            _ownedTokens[to].push(tokenId);
-        } else {
-            // Token is being burned, remove from global list
+        // If token is being burned, clean up metadata
+        if (to == address(0)) {
+            delete _ticketMetadata[tokenId];
             _removeTokenFromAllTokens(tokenId);
         }
+        
+        return from;
     }
     
-    /**
-     * @dev Helper to remove a token from the owner's list
-     * Simple implementation that doesn't preserve order but avoids stack issues
-     */
-    function _removeTokenFromOwner(address owner, uint256 tokenId) private {
-        uint256[] storage tokens = _ownedTokens[owner];
-        uint256 length = tokens.length;
+    // Split out transferability check to reduce stack depth
+    function _checkTransferability(uint256 tokenId) internal view returns (bool) {
+        address from = _ownerOf(tokenId);
         
-        // Find the token
-        for (uint256 i = 0; i < length; i++) {
-            if (tokens[i] == tokenId) {
-                // Replace with the last element and pop (O(1) removal)
-                tokens[i] = tokens[length - 1];
-                tokens.pop();
-                break;
-            }
+        // Minting operations always allowed
+        if (from == address(0)) {
+            return true;
         }
+        
+        // Check if contract is paused
+        if (paused()) {
+            return false;
+        }
+        
+        // Check if ticket is transferable
+        return _ticketMetadata[tokenId].isTransferable;
     }
     
-    /**
-     * @dev Helper to remove a token from the global list
-     * Simple implementation that doesn't preserve order but avoids stack issues
-     */
+    // Helper function to remove token from tracking
     function _removeTokenFromAllTokens(uint256 tokenId) private {
-        uint256 length = _allTokens.length;
-        
-        // Find the token
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < _allTokens.length; i++) {
             if (_allTokens[i] == tokenId) {
-                // Replace with the last element and pop (O(1) removal)
-                _allTokens[i] = _allTokens[length - 1];
+                // Swap with last element and pop (more gas efficient)
+                if (i != _allTokens.length - 1) {
+                    _allTokens[i] = _allTokens[_allTokens.length - 1];
+                }
                 _allTokens.pop();
                 break;
             }

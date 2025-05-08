@@ -8,21 +8,28 @@ require('hardhat-contract-sizer');
 require('dotenv/config');
 require('solidity-coverage');
 
-// Enhanced viaIR config for coverage
+// Special config for coverage testing with optimizations for stack depth
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
+      // Enable IR-based code generation, which often helps with stack too deep errors
       viaIR: true,
       optimizer: {
         enabled: true,
-        runs: 200,
+        // Lower runs means more optimization for complex code
+        runs: 1,
+        // Detailed optimization settings
         details: {
-          yul: true
+          yul: true,
+          yulDetails: {
+            stackAllocation: true,
+            optimizerSteps: "dhfoDgvulfnTUtnIf"
+          }
         }
       },
       debug: {
-        revertStrings: 'strip',
+        revertStrings: "strip",
       },
     },
   },
@@ -32,23 +39,19 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
     },
   },
+  // Turn off gas reporter during coverage
   gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    currency: 'USD',
+    enabled: false
   },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
-    runOnCompile: true,
-    strict: true,
-    only: [':TicketNFT$'],
+    // Don't run contract sizer during coverage
+    runOnCompile: false,
+    strict: false,
   },
   mocha: {
-    timeout: 100000, // 100 seconds
-  },
-  typechain: {
-    outDir: 'typechain-types',
-    target: 'ethers-v6',
+    timeout: 300000, // 5 minutes - coverage can be slow
   },
 };
 

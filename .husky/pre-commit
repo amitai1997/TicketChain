@@ -3,5 +3,5 @@
 
 # Run linters before committing
 npx solhint 'contracts/**/*.sol'
-# Use the dummy coverage script to allow commits while we fix the stack too deep error
-node scripts/dummy-coverage.js
+# Run the optimized coverage script
+node scripts/run-coverage-optimized.js
