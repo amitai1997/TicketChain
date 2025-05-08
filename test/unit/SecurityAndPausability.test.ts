@@ -28,15 +28,16 @@ describe('TicketNFT Security and Pausability', () => {
     await ticketNFT.pause();
 
     const ticketMetadata = {
-      eventId: 1,
-      price: hardhat.ethers.parseEther('0.1'),
-      validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
-      validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true,
-    };
+  eventId: 1,
+  price: hardhat.ethers.parseEther('0.1'),
+  validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
+  validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
+  isTransferable: true,
+    
+};
 
     await expect(
-      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)
+      ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable)
     ).to.be.revertedWithCustomError(ticketNFT, 'EnforcedPause');
   });
 
@@ -45,14 +46,15 @@ describe('TicketNFT Security and Pausability', () => {
     await ticketNFT.unpause();
 
     const ticketMetadata = {
-      eventId: 1,
-      price: hardhat.ethers.parseEther('0.1'),
-      validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
-      validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true,
-    };
+  eventId: 1,
+  price: hardhat.ethers.parseEther('0.1'),
+  validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
+  validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
+  isTransferable: true,
+    
+};
 
-    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata)).to.not.be
+    await expect(ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable)).to.not.be
       .reverted;
   });
 
@@ -73,14 +75,15 @@ describe('TicketNFT Security and Pausability', () => {
 
   it('should prevent token transfer when paused', async () => {
     const ticketMetadata = {
-      eventId: 1,
-      price: hardhat.ethers.parseEther('0.1'),
-      validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
-      validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
-      isTransferable: true,
-    };
+  eventId: 1,
+  price: hardhat.ethers.parseEther('0.1'),
+  validFrom: BigInt(Math.floor(Date.now() / 1000) + 3600),
+  validUntil: BigInt(Math.floor(Date.now() / 1000) + 7200),
+  isTransferable: true,
+    
+};
 
-    await ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata);
+    await ticketNFT.connect(minter).mintTicket(minter.address, 1, ticketMetadata.eventId, ticketMetadata.price, ticketMetadata.validFrom, ticketMetadata.validUntil, ticketMetadata.isTransferable);
     await ticketNFT.pause();
 
     const newOwner = (await hardhat.ethers.getSigners())[3];

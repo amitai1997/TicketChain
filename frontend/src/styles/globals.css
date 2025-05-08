@@ -72,7 +72,7 @@
     @apply text-foreground;
     @apply scroll-smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground;
     @apply antialiased;
@@ -91,43 +91,43 @@
     @apply border border-border dark:border-muted transition-all duration-200;
     @apply hover:shadow-xl;
   }
-  
+
   .ticket-header {
     @apply flex items-center justify-between mb-4;
   }
-  
+
   .ticket-title {
     @apply text-xl font-bold text-ticket-dark dark:text-white;
   }
-  
+
   .ticket-badge {
     @apply px-2 py-1 rounded-full text-xs font-semibold;
   }
-  
+
   .ticket-badge-valid {
     @apply bg-ticket-secondary/20 text-ticket-secondary;
   }
-  
+
   .ticket-badge-expired {
     @apply bg-destructive/20 text-destructive;
   }
-  
+
   .ticket-info {
     @apply space-y-2 mb-6;
   }
-  
+
   .ticket-detail {
     @apply flex justify-between text-sm;
   }
-  
+
   .ticket-detail-label {
     @apply text-muted-foreground;
   }
-  
+
   .ticket-detail-value {
     @apply font-medium;
   }
-  
+
   .ticket-actions {
     @apply flex gap-2 mt-4;
   }
@@ -138,4 +138,31 @@
   .focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
+}
+
+/* make the entire <input type="time"> show a pointer on hover */
+input[type="time"] {
+  cursor: pointer;
+}
+
+/* LIGHT MODE: default (black) clock icon */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(0%); /* leave as-is for black */
+  cursor: pointer;
+}
+input[type="time"]::-moz-color-swatch-wrapper {
+  filter: invert(0%);
+  cursor: pointer;
+}
+
+/* DARK MODE: white clock icon */
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(100%); /* white */
+  cursor: pointer;
+}
+.dark input[type="time"]::-moz-color-swatch-wrapper {
+  filter: invert(100%);
+  cursor: pointer;
 }

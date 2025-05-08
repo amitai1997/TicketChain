@@ -3,5 +3,5 @@
 
 # Run linters before committing
 npx solhint 'contracts/**/*.sol'
-# Run test coverage with optimized settings
-npm run test:coverage:fix
+# Run the optimized coverage script
+node scripts/run-coverage-optimized.js
