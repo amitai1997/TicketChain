@@ -7,15 +7,12 @@ require('hardhat-gas-reporter');
 require('hardhat-contract-sizer');
 require('dotenv/config');
 
-// Determine if we're running in coverage mode
-const isCoverage = process.env.SOLIDITY_COVERAGE === 'true';
-
+// Always enable viaIR to handle stack too deep errors
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
-      // Disable IR when in coverage mode
-      viaIR: !isCoverage,
+      viaIR: true,
       optimizer: {
         enabled: true,
         runs: 200,
