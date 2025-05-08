@@ -23,6 +23,7 @@ error TicketNotTransferable();
 error ContractPaused();
 error InvalidTicketTimeRange();
 error CannotRenounceAdminRole();
+error IndexOutOfBounds();
 
 /**
  * @title TicketNFT
@@ -145,7 +146,9 @@ contract TicketNFT is ERC721, AccessControl, Pausable, ERC721Burnable {
     }
     
     function tokenByIndex(uint256 index) public view returns (uint256) {
-        require(index < totalSupply(), "Index out of bounds");
+        if (index >= totalSupply()) {
+            revert IndexOutOfBounds();
+        }
         return _allTokens[index];
     }
 
