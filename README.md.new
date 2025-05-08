@@ -1,0 +1,443 @@
+# TicketChain 🎟️
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Solidity Version](https://img.shields.io/badge/Solidity-v0.8.20-blue)](https://soliditylang.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/ticketchain)
+
+A blockchain-based NFT ticketing system built on Ethereum.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture Diagram](#architecture-diagram)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Detailed Setup](#detailed-setup)
+- [Usage Examples](#usage-examples)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Configuration Reference](#configuration-reference)
+- [Contributing Guide](#contributing-guide)
+- [Roadmap & Planned Features](#roadmap--planned-features)
+- [Known Issues / Limitations](#known-issues--limitations)
+- [License](#license)
+- [Acknowledgments & References](#acknowledgments--references)
+- [Contact & Community](#contact--community)
+
+## Overview
+
+TicketChain revolutionizes event ticketing by providing a secure, transparent, and decentralized platform powered by blockchain technology. Each ticket is represented as a unique NFT (Non-Fungible Token) on the Ethereum blockchain, ensuring authenticity and eliminating counterfeiting.
+
+### Key Features:
+
+- **Secure Ticket Issuance** - Create tamper-proof digital tickets with customizable metadata
+- **Verified Resale Market** - Control secondary market transfers with royalty schemes
+- **Time-Based Validity** - Built-in mechanisms for ticket validation timeframes
+- **Access Control** - Granular permission system for event organizers
+- **Transparent Ownership** - Clear history of ticket ownership and transfers
+- **Anti-Scalping Measures** - Price caps and transfer limitations
+- **Event Registry** - Decoupled event management system for better maintainability
+- **Organizer Control** - Event creators can mint tickets for their own events
+
+## Architecture Diagram
+
+```mermaid
+graph TD
+    A[Event Organizer] -->|Create Event| B[EventRegistry Contract]
+    B -->|Event Created| C[Event Data]
+    A -->|Mint Tickets| D[EventTicket Contract]
+    D -->|Reference| C
+    D -->|Issue Tickets| E[Primary Market]
+    E -->|Purchase| F[Ticket Holder]
+    F -->|Transfer/Sell| G[Secondary Market]
+    G -->|Buy| H[New Ticket Holder]
+    H -->|Redeem| I[Event Entry]
+
+    subgraph Blockchain
+    B
+    C
+    D
+    end
+
+    subgraph TicketChain System
+    E
+    G
+    end
+
+    D -->|Verify| I
+```
+
+## System Architecture
+
+TicketChain uses a modular two-contract architecture for better separation of concerns and improved maintainability:
+
+### EventRegistry Contract
+- Manages event creation and metadata
+- Stores event details (organizer, time range, metadata URI)
+- Controls event activation/deactivation
+- Implements role-based access control for event organizers
+
+### EventTicket Contract (ERC-721 NFT)
+- Manages ticket issuance, transfers, and validation
+- References EventRegistry for event data
+- Implements transferability controls
+- Supports batch minting operations
+- Enables direct ticket minting by event organizers
+
+This separation allows for:
+- Independent upgradeability of event and ticket logic
+- Clear separation of roles and permissions
+- Better scalability for different ticket types and event configurations
+- More focused audit scope for each component
+
+## Tech Stack
+
+- **Solidity (v0.8.20)** - Smart contract language offering security features and EVM compatibility essential for ticket NFT implementation.
+- **OpenZeppelin Contracts** - Provides security-audited contract implementations for access control, tokens, and pausability to reduce vulnerability risks.
+- **Hardhat** - Ethereum development environment with debugging, network management, and testing tools that streamline the development workflow.
+- **Ethers.js** - JavaScript library for interacting with the Ethereum blockchain, chosen for its comprehensive API and Promise-based interface.
+- **Chai/Mocha** - Testing frameworks that enable robust contract testing with readable assertions and organized test suites.
+- **pnpm** - Fast, disk space efficient package manager used for managing the project's dependencies.
+
+## Quick Start
+
+Get TicketChain running locally in minutes:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ticketchain.git
+cd ticketchain
+
+# Install dependencies
+pnpm install
+
+# Compile contracts
+pnpm compile
+
+# Deploy both contracts and mint tickets in one step (NEW!)
+pnpm deploy:dev
+```
+
+### Alternative Setup
+
+```bash
+# Start a local Ethereum node
+pnpm hardhat node
+
+# Deploy contracts to the local network (in a new terminal)
+pnpm deploy:local
+
+# Create an event
+pnpm create-event --network localhost --name "My Concert" --start "2025-06-01T19:00:00" --end "2025-06-01T23:00:00"
+
+# Mint tickets for the event
+pnpm mint-tickets --network localhost --event 1 --quantity 10 --price "0.05"
+```
+
+### Docker Quick Start
+
+```bash
+# Build and run with Docker
+docker build -t ticketchain .
+docker run -p 8545:8545 ticketchain
+```
+
+## Detailed Setup
+
+### Prerequisites
+
+- Node.js >= 16.x (v18.x recommended for best compatibility)
+- pnpm >= 8.x
+- Git
+
+### Environment Configuration
+
+Create a `.env` file in the project root based on the provided `.env.example`:
+
+```
+# File: .env
+INFURA_API_KEY=your_infura_api_key
+PRIVATE_KEY=your_wallet_private_key
+ETHERSCAN_API_KEY=your_etherscan_api_key
+EVENT_REGISTRY_ADDRESS=0x123...  # Only needed for script execution on testnets/mainnet
+EVENT_TICKET_ADDRESS=0x456...    # Only needed for script execution on testnets/mainnet
+```
+
+### Network Configuration
+
+TicketChain supports multiple Ethereum networks. Default configuration is in `hardhat.config.ts`:
+
+```typescript
+// File: hardhat.config.ts
+const config: HardhatUserConfig = {
+  solidity: {
+    version: '0.8.20',
+    settings: {
+      viaIR: !isCoverage,
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+      debug: {
+        revertStrings: 'strip',
+      },
+    },
+  },
+  networks: {
+    // Local development
+    hardhat: {
+      chainId: 1337,
+      allowUnlimitedContractSize: true,
+    },
+  },
+  // Other configurations...
+};
+```
+
+### Contract Compilation
+
+```bash
+pnpm compile
+```
+
+## Usage Examples
+
+### Example 1: Deploy Both Contracts
+
+```bash
+# Deploy EventRegistry and EventTicket contracts
+pnpm deploy:dev
+
+# Deploy to running local node
+pnpm deploy:local
+
+# Deploy to Sepolia testnet
+pnpm deploy:testnet
+```
+
+**Expected Result:** Contract addresses displayed in terminal and saved to `deployments/{network}-deployment.json`
+
+### Example 2: Create a New Event
+
+```bash
+# Create an event with specified details
+pnpm create-event --name "Summer Festival" --start "2025-07-15T14:00:00" --end "2025-07-15T23:00:00" --uri "ipfs://QmEventMetadata123"
+```
+
+**Expected Result:** Event created with unique event ID displayed in terminal
+
+### Example 3: Mint Tickets for an Event
+
+```bash
+# Mint multiple tickets for an event
+pnpm mint-tickets --event 1 --quantity 5 --price "0.1" --transferable true
+```
+
+**Expected Result:** 5 tickets minted with specified price and transferability setting
+
+### Example 4: Mint Tickets as Event Organizer
+
+```typescript
+// File: scripts/organizer-mint.js
+const eventId = 1;
+const recipientAddress = '0xRecipientAddressHere';
+const tx = await eventTicket
+  .connect(organizer)
+  .organizerMintTicket(
+    recipientAddress,
+    eventId,
+    ethers.parseEther('0.5'),
+    validFrom,
+    validUntil,
+    true // transferable
+  );
+await tx.wait();
+```
+
+**Expected Result:** Ticket minted directly by the event organizer
+
+### Example 5: Check Ticket Validity
+
+```typescript
+// File: scripts/check-ticket.js
+const ticketId = 1;
+const isValid = await eventTicket.isTicketValid(ticketId);
+console.log(`Ticket ${ticketId} is ${isValid ? 'valid' : 'invalid'}`);
+```
+
+**Expected Result:** Validity status of the ticket displayed
+
+## Testing
+
+TicketChain includes comprehensive tests for all core functionality.
+
+### Running the Test Suite
+
+```bash
+# Run unit tests
+pnpm test
+
+# Run integration tests
+pnpm test:integration
+
+# Run all tests
+pnpm test:all
+
+# Run tests with gas reporting
+pnpm test:gas
+
+# Run test coverage analysis
+pnpm test:coverage
+```
+
+### Test Structure
+
+- `test/unit/EventRegistry.test.ts` - Tests for event creation and management
+- `test/unit/EventTicket.test.ts` - Tests for ticket minting and management
+- `test/unit/AccessControl.test.ts` - Tests for role-based permissions
+- `test/unit/SecurityAndPausability.test.ts` - Tests for pausing functionality
+- `test/integration/EventTicketSystem.test.ts` - Integration tests for complete system workflows
+
+## Deployment
+
+### Local Development Deployment
+
+For rapid local development, we offer streamlined scripts:
+
+```bash
+# Deploy to Hardhat's in-memory network
+pnpm deploy:dev
+
+# Deploy and create sample events and tickets
+pnpm setup:dev
+```
+
+### Production Deployment
+
+For production deployments, follow these steps:
+
+1. Configure `.env` with your production credentials
+2. Run the deployment script targeting your production network:
+
+```bash
+pnpm deploy:mainnet
+```
+
+### Contract Verification
+
+To verify your contracts on Etherscan:
+
+```bash
+# Verify EventRegistry contract
+pnpm verify:registry --network sepolia YOUR_DEPLOYED_REGISTRY_ADDRESS
+
+# Verify EventTicket contract
+pnpm verify:ticket --network sepolia YOUR_DEPLOYED_TICKET_ADDRESS
+```
+
+### CI/CD Integration
+
+TicketChain includes integrated CI/CD with GitHub Actions. The workflow includes:
+
+- Setup stage
+- Code quality checks
+- Unit and integration tests
+- Security scanning with Slither and Mythril
+
+## Configuration Reference
+
+| Parameter             | Default          | Description                                    | Where to Set                 |
+| --------------------- | ---------------- | ---------------------------------------------- | ---------------------------- |
+| `EVENT_ORGANIZER_ROLE`| Owner            | Controls who can create events                 | EventRegistry contract       |
+| `MINTER_ROLE`         | Owner            | Controls who can create new tickets            | EventTicket contract         |
+| `PAUSER_ROLE`         | Owner            | Controls who can pause/unpause contracts       | Both contracts               |
+| `EventRegistry Address`| -                | Address of deployed EventRegistry contract     | EventTicket constructor      |
+| `Gas Limit`           | 2,100,000        | Maximum computational effort for transactions  | hardhat.config.ts            |
+| `Gas Price`           | 8 gwei           | Price per unit of gas (network-specific)       | hardhat.config.ts            |
+| `Optimizer Runs`      | 200              | Contract optimization level                    | hardhat.config.ts            |
+| `Network Chain ID`    | 1337 (localhost) | Blockchain network identifier                  | hardhat.config.ts            |
+
+## Contributing Guide
+
+We welcome contributions from the community! Follow these steps to contribute:
+
+### Branching Model
+
+- `main` - Production-ready code
+- `develop` - Latest development changes
+- `feature/*` - New features
+- `bugfix/*` - Bug fixes
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`pnpm test:all`)
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### PR Checklist
+
+- [ ] Tests added/updated for new functionality
+- [ ] Integration tests added for complex features
+- [ ] Documentation updated
+- [ ] Code follows project style guide
+- [ ] All tests passing
+
+## Roadmap & Planned Features
+
+- **Q2 2025**: Mobile app integration
+- **Q3 2025**: Multi-chain support (Polygon, Optimism)
+- **Q3 2025**: Advanced ticketing features (e.g., seat selection, tiered pricing)
+- **Q4 2025**: Event organizer dashboard
+- **Q1 2026**: Integration with point-of-sale systems
+- **Future**: Layer 2 scaling solution integration
+
+### Upcoming Technical Improvements
+
+- Support for custom ticket tiers (VIP, general admission)
+- Royalty distribution for secondary market sales
+- Improved metadata standards for event and ticket details
+- Enhanced batch operations for gas efficiency
+- Cross-chain ticket validation
+
+## Known Issues / Limitations
+
+- **Gas Costs**: High gas prices on Ethereum mainnet can make individual ticket minting expensive
+  - _Workaround_: Use batched minting or consider L2 solutions
+- **Block Confirmation Times**: Event entry might require waiting for transaction confirmations
+  - _Workaround_: Use state channels or implement a centralized verification layer
+- **MetaMask Required**: Requires users to have MetaMask or similar wallet
+  - _Workaround_: Implement custodial solution for mainstream adoption
+- **Ethereum Node.js v23 Compatibility**: Some warnings appear with newer Node.js versions
+  - _Workaround_: Use Node.js v18 for best compatibility (specified in .node-version file)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 TicketChain Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+```
+
+## Acknowledgments & References
+
+- OpenZeppelin for their secure contract implementations
+- Ethereum Foundation documentation
+- [ERC-721 Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
+- [NFT Ticketing Research Paper](https://arxiv.org/abs/example)
+- Inspired by [GET Protocol](https://get-protocol.io/) and other blockchain ticketing projects
+
+## Contact & Community
+
+- **GitHub Issues**: For bug reports and feature requests
+- **Email**: team@ticketchain.example.com
+- **Discord**: [Join our server](https://discord.gg/ticketchain)
+- **Twitter**: [@TicketChainDev](https://twitter.com/ticketchaindev)
