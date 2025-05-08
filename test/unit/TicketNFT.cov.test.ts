@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre from "hardhat";
+import { ethers } from "ethers";
 import { TicketNFT } from "../../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
@@ -23,10 +24,10 @@ describe("TicketNFT Coverage Test", function () {
   const IS_TRANSFERABLE = true;
 
   beforeEach(async function () {
-    [owner, minter, pauser, buyer] = await ethers.getSigners();
+    [owner, minter, pauser, buyer] = await hre.ethers.getSigners();
     
     // Deploy the contract
-    const TicketNFTFactory = await ethers.getContractFactory("TicketNFT");
+    const TicketNFTFactory = await hre.ethers.getContractFactory("TicketNFT");
     ticketNFT = await TicketNFTFactory.deploy();
     
     // Grant roles
@@ -65,6 +66,7 @@ describe("TicketNFT Coverage Test", function () {
     });
     
     it("should revert when minted by non-minter", async function () {
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(buyer).mintTicket(
           buyer.address,
@@ -79,6 +81,7 @@ describe("TicketNFT Coverage Test", function () {
     });
     
     it("should revert when validFrom is after validUntil", async function () {
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(minter).mintTicket(
           buyer.address,
@@ -103,6 +106,7 @@ describe("TicketNFT Coverage Test", function () {
     });
     
     it("should revert when paused by non-pauser", async function () {
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(buyer).pause()
       ).to.be.revertedWithCustomError(ticketNFT, "PauserRoleRequired");
@@ -110,6 +114,7 @@ describe("TicketNFT Coverage Test", function () {
     
     it("should revert when unpaused by non-pauser", async function () {
       await ticketNFT.connect(pauser).pause();
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(buyer).unpause()
       ).to.be.revertedWithCustomError(ticketNFT, "PauserRoleRequired");
@@ -134,10 +139,12 @@ describe("TicketNFT Coverage Test", function () {
     });
     
     it("should revert for non-existent tickets", async function () {
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.getTicketMetadata(999)
       ).to.be.revertedWithCustomError(ticketNFT, "TicketDoesNotExist");
       
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.isTicketValid(999)
       ).to.be.revertedWithCustomError(ticketNFT, "TicketDoesNotExist");
@@ -197,6 +204,7 @@ describe("TicketNFT Coverage Test", function () {
     });
     
     it("should prevent transfer of non-transferable tickets", async function () {
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(buyer).transferFrom(buyer.address, owner.address, TOKEN_ID + 1)
       ).to.be.revertedWithCustomError(ticketNFT, "TicketNotTransferable");
@@ -206,6 +214,7 @@ describe("TicketNFT Coverage Test", function () {
       await ticketNFT.connect(pauser).pause();
       
       // Use a more generic assertion that will work with any error when paused
+      // @ts-ignore: Hardhat Chai matcher
       await expect(
         ticketNFT.connect(buyer).transferFrom(buyer.address, owner.address, TOKEN_ID)
       ).to.be.reverted;

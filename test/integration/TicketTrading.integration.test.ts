@@ -1,26 +1,28 @@
-import hardhat from 'hardhat';
+import hre from 'hardhat';
 import { expect } from 'chai';
-import { TicketNFT } from '../../types/typechain-types';
+import { TicketNFT } from '../../typechain-types/contracts';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
+import { ethers } from 'ethers';
 
 describe('TicketNFT Trading Integration', () => {
   let ticketNFT: TicketNFT;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   let owner: HardhatEthersSigner;
   let minter: HardhatEthersSigner;
   let buyer: HardhatEthersSigner;
   let secondBuyer: HardhatEthersSigner;
 
   beforeEach(async () => {
+    // @ts-ignore: Hardhat runtime extension
     const [ownerSigner, minterSigner, buyerSigner, secondBuyerSigner] =
-      await hardhat.ethers.getSigners();
+      await hre.ethers.getSigners();
     owner = ownerSigner;
     minter = minterSigner;
     buyer = buyerSigner;
     secondBuyer = secondBuyerSigner;
 
-    // Deploy the contract
-    const TicketNFTFactory = await hardhat.ethers.getContractFactory('TicketNFT');
+    // @ts-ignore: Hardhat runtime extension
+    const TicketNFTFactory = await hre.ethers.getContractFactory('TicketNFT');
     ticketNFT = await TicketNFTFactory.deploy();
 
     // Grant minter role
@@ -30,19 +32,25 @@ describe('TicketNFT Trading Integration', () => {
 
   it('should complete a full ticket lifecycle - mint, transfer, and validate', async () => {
     // 1. Create a ticket
-    const currentTime = Math.floor(Date.now() / 1000);
+    // Get the current block timestamp
+    // @ts-ignore: Hardhat runtime extension
+    const blockNum = await hre.network.provider.send('eth_blockNumber', []);
+    // @ts-ignore: Hardhat runtime extension
+    const block = await hre.network.provider.send('eth_getBlockByNumber', [blockNum, false]);
+    const now = Number(block.timestamp ?? Math.floor(Date.now() / 1000));
+
     const ticketMetadata = {
-      eventId: 1n,
-      price: hardhat.ethers.parseEther('0.5'),
-      validFrom: BigInt(currentTime + 3600), // 1 hour from now
-      validUntil: BigInt(currentTime + 7200), // 2 hours from now
+      eventId: 1,
+      price: ethers.parseEther('0.5'),
+      validFrom: BigInt(now + 10), // 10 seconds in the future
+      validUntil: BigInt(now + 3610), // 1 hour after validFrom
       isTransferable: true,
     };
 
     // Mint the ticket to the buyer
     await ticketNFT.connect(minter).mintTicket(
       buyer.address, 
-      1n, 
+      BigInt(1), 
       ticketMetadata.eventId,
       ticketMetadata.price,
       ticketMetadata.validFrom,
@@ -61,17 +69,17 @@ describe('TicketNFT Trading Integration', () => {
     // Verify the new ownership
     expect(await ticketNFT.ownerOf(1)).to.equal(secondBuyer.address);
 
-    // 3. Advance time to make the ticket valid
-    await hardhat.ethers.provider.send('evm_setNextBlockTimestamp', [currentTime + 5000]);
-    await hardhat.ethers.provider.send('evm_mine');
+    // 3. Advance time to just after validFrom
+    await hre.network.provider.send('evm_setNextBlockTimestamp', [Number(ticketMetadata.validFrom) + 1]);
+    await hre.network.provider.send('evm_mine');
 
     // 4. Verify ticket validity
     const isValid = await ticketNFT.isTicketValid(1);
     expect(isValid).to.be.true;
 
-    // 5. Advance time to make the ticket expired
-    await hardhat.ethers.provider.send('evm_setNextBlockTimestamp', [currentTime + 8000]);
-    await hardhat.ethers.provider.send('evm_mine');
+    // 5. Advance time to just after validUntil
+    await hre.network.provider.send('evm_setNextBlockTimestamp', [Number(ticketMetadata.validUntil) + 1]);
+    await hre.network.provider.send('evm_mine');
 
     // 6. Verify ticket is no longer valid
     const isExpired = await ticketNFT.isTicketValid(1);
@@ -80,11 +88,11 @@ describe('TicketNFT Trading Integration', () => {
 
   it('should handle minting and managing multiple tickets for an event', async () => {
     const currentTime = Math.floor(Date.now() / 1000);
-    const eventId = 2n;
+    const eventId = BigInt(2);
 
     // Create 3 tickets for the same event
     for (let i = 1; i <= 3; i++) {
-      const ticketPrice = hardhat.ethers.parseEther(String(0.5 * i)); // Different prices
+      const ticketPrice = ethers.parseEther(String(0.5 * i)); // Different prices
       const isTransferable = i % 2 === 0; // Alternating transferability
       
       await ticketNFT.connect(minter).mintTicket(
@@ -102,27 +110,19 @@ describe('TicketNFT Trading Integration', () => {
     for (let i = 1; i <= 3; i++) {
       const ticket = await ticketNFT.getTicketMetadata(i);
       expect(ticket.eventId).to.equal(eventId);
-      expect(ticket.price).to.equal(hardhat.ethers.parseEther(String(0.5 * i)));
+      expect(ticket.price).to.equal(ethers.parseEther(String(0.5 * i)));
       expect(ticket.isTransferable).to.equal(i % 2 === 0);
     }
 
     // Try to transfer a non-transferable ticket (should fail)
     const nonTransferableTicketId = 1; // First ticket is non-transferable
-    await expect(
-      ticketNFT
-        .connect(buyer)
-        [
-          'safeTransferFrom(address,address,uint256)'
-        ](buyer.address, secondBuyer.address, nonTransferableTicketId)
-    ).to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
+    await expect(ticketNFT.connect(buyer)['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, nonTransferableTicketId)) // @ts-ignore: Hardhat Chai matcher
+      .to.be.revertedWithCustomError(ticketNFT, 'TicketNotTransferable');
 
     // Transfer a transferable ticket (should succeed)
     const transferableTicketId = 2; // Second ticket is transferable
     await ticketNFT
-      .connect(buyer)
-      [
-        'safeTransferFrom(address,address,uint256)'
-      ](buyer.address, secondBuyer.address, transferableTicketId);
+      .connect(buyer)['safeTransferFrom(address,address,uint256)'](buyer.address, secondBuyer.address, transferableTicketId);
 
     // Verify the ownership changed
     expect(await ticketNFT.ownerOf(transferableTicketId)).to.equal(secondBuyer.address);

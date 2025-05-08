@@ -31,8 +31,8 @@ interface UseTicketNFTProps {
 
 export function useTicketNFT({ contractAddress }: UseTicketNFTProps = {}) {
   // Get contract address from props or env
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [contractAddr, setContractAddr] = useState<string>(
+   
+  const [contractAddr] = useState<string>(
     contractAddress ||
       import.meta.env.VITE_CONTRACT_ADDRESS ||
       '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
