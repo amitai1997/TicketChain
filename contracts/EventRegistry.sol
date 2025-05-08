@@ -3,21 +3,19 @@ pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
 error EventOrganizerRoleRequired();
 error PauserRoleRequired();
 error EventDoesNotExist();
 error InvalidEventTimeRange();
 error CannotRenounceAdminRole();
+error NotOrganizerOrAdmin();
 
 /**
  * @title EventRegistry
  * @dev Contract for managing events in the TicketChain platform
  */
 contract EventRegistry is AccessControl, Pausable {
-    using Counters for Counters.Counter;
-
     struct EventInfo {
         uint256 id;
         address organizer;
@@ -34,7 +32,7 @@ contract EventRegistry is AccessControl, Pausable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // Counter for event IDs
-    Counters.Counter private _eventIdCounter;
+    uint256 private _nextEventId;
 
     // Mapping from event IDs to EventInfo
     mapping(uint256 => EventInfo) private _events;
@@ -77,8 +75,8 @@ contract EventRegistry is AccessControl, Pausable {
             revert InvalidEventTimeRange();
         }
 
-        _eventIdCounter.increment();
-        uint256 eventId = _eventIdCounter.current();
+        _nextEventId++;
+        uint256 eventId = _nextEventId;
 
         _events[eventId] = EventInfo({
             id: eventId,
@@ -117,10 +115,9 @@ contract EventRegistry is AccessControl, Pausable {
         EventInfo storage eventInfo = _events[eventId];
         
         // Only the organizer or admin can update
-        require(
-            eventInfo.organizer == msg.sender || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "Only organizer or admin can update"
-        );
+        if (eventInfo.organizer != msg.sender && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            revert NotOrganizerOrAdmin();
+        }
 
         eventInfo.name = name;
         eventInfo.description = description;
@@ -140,10 +137,9 @@ contract EventRegistry is AccessControl, Pausable {
         EventInfo storage eventInfo = _events[eventId];
         
         // Only the organizer or admin can cancel
-        require(
-            eventInfo.organizer == msg.sender || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "Only organizer or admin can cancel"
-        );
+        if (eventInfo.organizer != msg.sender && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            revert NotOrganizerOrAdmin();
+        }
 
         eventInfo.canceled = true;
 
