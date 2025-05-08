@@ -23,13 +23,11 @@ async function main() {
   const currentTime = Math.floor(Date.now() / 1000);
 
   // Create ticket metadata
-  const ticketMetadata = {
-    eventId: 1,
-    price: ethers.parseEther('0.1'),
-    saleStartTime: BigInt(currentTime + 3600), // 1 hour from now
-    saleEndTime: BigInt(currentTime + 86400), // 24 hours from now
-    isTransferable: true,
-  };
+  const eventId = 1;
+  const price = ethers.parseEther('0.1');
+  const validFrom = currentTime + 3600; // 1 hour from now
+  const validUntil = currentTime + 86400; // 24 hours from now
+  const isTransferable = true;
 
   // Mint a ticket to the recipient
   console.log('Minting a ticket...');
@@ -37,7 +35,15 @@ async function main() {
   const tokenId = 1;
 
   try {
-    const tx = await ticketNFT.mintTicket(recipientAddress, tokenId, ticketMetadata);
+    const tx = await ticketNFT.mintTicket(
+      recipientAddress, 
+      tokenId, 
+      eventId, 
+      price, 
+      validFrom, 
+      validUntil, 
+      isTransferable
+    );
 
     console.log(`Transaction hash: ${tx.hash}`);
     await tx.wait();
@@ -51,8 +57,8 @@ async function main() {
     console.log('===============');
     console.log(`Event ID: ${metadata.eventId}`);
     console.log(`Price: ${ethers.formatEther(metadata.price)} ETH`);
-    console.log(`Valid From: ${new Date(Number(metadata.saleStartTime) * 1000).toLocaleString()}`);
-    console.log(`Valid Until: ${new Date(Number(metadata.saleEndTime) * 1000).toLocaleString()}`);
+    console.log(`Valid From: ${new Date(Number(metadata.validFrom) * 1000).toLocaleString()}`);
+    console.log(`Valid Until: ${new Date(Number(metadata.validUntil) * 1000).toLocaleString()}`);
     console.log(`Transferable: ${metadata.isTransferable}`);
   } catch (error) {
     console.error('Error minting ticket:', error);

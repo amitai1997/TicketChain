@@ -205,7 +205,7 @@ describe("TicketNFT Coverage Test", function () {
     it("should prevent transfers when paused", async function () {
       await ticketNFT.connect(pauser).pause();
       
-      // Use a more generic assertion that will work with any error when paused
+      // Use a more generic assertion since the error might be from OpenZeppelin
       await expect(
         ticketNFT.connect(buyer).transferFrom(buyer.address, owner.address, TOKEN_ID)
       ).to.be.reverted;
